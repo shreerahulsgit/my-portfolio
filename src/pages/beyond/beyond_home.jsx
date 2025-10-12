@@ -1,0 +1,344 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import Spline from "@splinetool/react-spline";
+
+const BeyondPortfolio = () => {
+  const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const sliderRef = useRef(null);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  const cards = [
+    {
+      title: "BOOKS",
+      subtitle: "Stories that shaped how I think.",
+      image:
+        "https://res.cloudinary.com/dqqrrgdwd/image/upload/v1760170029/books_uoldj8.jpg",
+      link: "/beyond/books",
+    },
+    {
+      title: "MUSIC",
+      subtitle: "Soundtracks to my moods.",
+      image:
+        "https://res.cloudinary.com/dqqrrgdwd/image/upload/v1760170040/desk-music-black-and-white-technology-headphone-gadget-100901-pxhere.com_yeay0u.jpg",
+      link: "/beyond/music",
+    },
+    {
+      title: "MOVIES",
+      subtitle: "Cinematic worlds I escape into.",
+      image:
+        "https://res.cloudinary.com/dqqrrgdwd/image/upload/v1760170030/Movie_ogjjt6.jpg",
+      link: "/beyond/movies",
+    },
+    {
+      title: "SPORTS & ADRENALINE",
+      subtitle: "The thrill side of me.",
+      image:
+        "https://res.cloudinary.com/dqqrrgdwd/image/upload/v1760170028/F1_fne2yc.jpg",
+      link: "/beyond/sports",
+    },
+    {
+      title: "RANDOM FACTS",
+      subtitle: "Chaos you didn't ask for.",
+      image:
+        "https://res.cloudinary.com/dqqrrgdwd/image/upload/v1760170029/BG_of_the_beyond_s5gpta.webp",
+      link: "/beyond/random",
+    },
+  ];
+
+  const totalCards = cards.length;
+  const cardWidth = 250;
+  const gap = 28;
+
+  const scrollToSlide = (index) => {
+    setCurrentSlide(index);
+  };
+
+  const handlePrev = () => {
+    const newSlide = currentSlide > 0 ? currentSlide - 1 : totalCards - 1;
+    scrollToSlide(newSlide);
+  };
+
+  const handleNext = () => {
+    const newSlide = currentSlide < totalCards - 1 ? currentSlide + 1 : 0;
+    scrollToSlide(newSlide);
+  };
+
+  const handleCardClick = (link) => {
+    navigate(link);
+  };
+
+  const progressPercentage = ((currentSlide + 1) / totalCards) * 100;
+
+  return (
+    <div className="h-screen text-white overflow-hidden relative flex items-center">
+      {/* Spline 3D Background */}
+      <div className="absolute inset-0">
+        <Spline
+          scene="https://prod.spline.design/aBrOEZccG5o-XuUp/scene.splinecode"
+          className="w-full h-full"
+        />
+        {/* Light overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
+
+      {/* Cursor Glow */}
+      <div
+        className="absolute w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none transition-all duration-500 ease-out"
+        style={{
+          left: mousePosition.x - 192,
+          top: mousePosition.y - 192,
+        }}
+      />
+
+      {/* Main Container */}
+      <div className="relative z-10 w-full h-full flex">
+        {/* Left Side - Hero Content */}
+        <div className="w-1/2 flex flex-col justify-center px-12 lg:px-16">
+          <div
+            className={`transition-all duration-1000 ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-12"
+            }`}
+          >
+            {/* Small Label */}
+            <div className="mb-6">
+              <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                <p className="text-sm text-white/70 tracking-wider">
+                  BEYOND THE PORTFOLIO
+                </p>
+              </div>
+            </div>
+
+            {/* Main Title */}
+            <h1 className="text-6xl lg:text-7xl font-black mb-6 leading-none">
+              <span className="block text-white">LET'S EXPLORE</span>
+              <span className="block text-white">BEYOND TECH</span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
+              The things that inspire me beyond coding — stories, sounds,
+              sports, and moments that fuel creativity.
+            </p>
+
+            {/* Buttons */}
+            <div className="flex gap-4">
+              <button
+                onClick={() => navigate("/beyond-entry")}
+                className="px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-semibold transition-all duration-300 flex items-center gap-2 hover:scale-105"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Back
+              </button>
+              <button
+                onClick={() => navigate("/beyond/books")}
+                className="group px-8 py-4 bg-white hover:bg-gray-200 text-black rounded-full font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105"
+              >
+                <Sparkles className="w-5 h-5" />
+                Dive In
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Card Slider */}
+        <div className="w-1/2 flex items-center relative">
+          <div
+            className={`w-full transition-all duration-1000 delay-300 ${
+              isVisible
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-12"
+            }`}
+          >
+            {/* Cards Container */}
+            <div
+              className="relative flex items-center justify-center h-full"
+              style={{
+                width: `${cardWidth * 3 + gap * 2}px`,
+                height: "500px",
+                margin: "0 auto",
+              }}
+            >
+              {cards.map((card, index) => {
+                const isActive = index === currentSlide;
+                const distance = index - currentSlide;
+
+                // Only show 3 cards: prev, current, next
+                const isVisible = Math.abs(distance) <= 1;
+                if (!isVisible) return null;
+
+                const scale = isActive ? 1.0 : 0.75;
+                const opacity = isActive ? 1 : 0.6;
+                const translateX = distance * (cardWidth + gap);
+                const zIndex = isActive ? 10 : 5;
+
+                return (
+                  <div
+                    key={index}
+                    className="absolute group cursor-pointer"
+                    style={{
+                      width: `${cardWidth}px`,
+                      transform: `translateX(${translateX}px) scale(${scale})`,
+                      opacity: opacity,
+                      filter: isActive ? "none" : "blur(0.5px)",
+                      zIndex: zIndex,
+                      left: "50%",
+                      marginLeft: `-${cardWidth / 2}px`,
+                      transition:
+                        "all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                    }}
+                    onClick={() => {
+                      if (isActive) {
+                        handleCardClick(card.link);
+                      } else {
+                        scrollToSlide(index);
+                      }
+                    }}
+                  >
+                    <div
+                      className="relative h-[350px] rounded-3xl overflow-hidden backdrop-blur-lg border border-white/20 shadow-2xl hover:border-white/40"
+                      style={{
+                        transition:
+                          "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      }}
+                    >
+                      {/* Background Image */}
+                      <img
+                        src={card.image}
+                        alt={card.title}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110"
+                        style={{
+                          transition:
+                            "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                        }}
+                      />
+
+                      {/* Dark Overlay Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
+                      {/* Content */}
+                      <div className="relative h-full flex flex-col justify-end p-6">
+                        <div
+                          className="space-y-3 transform translate-y-0 group-hover:-translate-y-2"
+                          style={{
+                            transition:
+                              "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                          }}
+                        >
+                          <div
+                            className="w-12 h-1 bg-white/60 rounded-full group-hover:w-20 group-hover:bg-white"
+                            style={{
+                              transition:
+                                "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                            }}
+                          />
+                          <h3 className="text-xl font-black text-white tracking-wide">
+                            {card.title}
+                          </h3>
+                          <p className="text-white/70 text-xs">
+                            {card.subtitle}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Inner Border Glow on Active */}
+                      <div
+                        className={`absolute inset-0 rounded-3xl border-2 transition-all duration-700 ${
+                          isActive ? "border-white/30" : "border-white/0"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Controls */}
+      <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-8">
+        {/* Navigation Buttons */}
+        <button
+          onClick={handlePrev}
+          className="w-12 h-12 rounded-full bg-white hover:bg-gray-200 border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600" />
+        </button>
+
+        {/* Progress Bar */}
+        <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-white to-gray-300 transition-all duration-500 rounded-full"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+
+        <button
+          onClick={handleNext}
+          className="w-12 h-12 rounded-full bg-white hover:bg-gray-200 border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-600" />
+        </button>
+
+        {/* Page Counter */}
+        <div className="text-4xl font-bold text-white/80 ml-4">
+          {currentSlide + 1}
+        </div>
+      </div>
+
+      {/* Footer Quote */}
+      <div
+        className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 delay-700 ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
+        <p className="text-white/80 text-base italic text-center font-medium mr-10">
+          "Every story has a rhythm — this is mine."
+        </p>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%,
+          100% {
+            transform: translate(0, 0) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 30px) scale(0.9);
+          }
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default BeyondPortfolio;
