@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Home, User, Briefcase, Mail, FileText, Wrench } from "lucide-react";
+import '../styles/navigation-bar.css';
 
-export default function NavBar({
+const NavigationBar = ({
   isLoaded = true,
   currentPage = "Home",
   onHomeClick,
@@ -10,20 +11,19 @@ export default function NavBar({
   onContactClick,
   onSpecialClick,
   onSkillsClick,
-}) {
+}) => {
   const [hoverIndex, setHoverIndex] = useState(null);
 
   const navigationIcons = [
     { icon: Home, label: "Home" },
     { icon: User, label: "About" },
     { icon: Briefcase, label: "Projects" },
-    { icon: "custom-image", label: "Special", special: true }, // center special icon
+    { icon: "custom-image", label: "Special", special: true },
     { icon: FileText, label: "Resume" },
     { icon: Mail, label: "Contact" },
     { icon: Wrench, label: "Skills" },
   ];
 
-  // Get active icon index based on current page
   const getActiveIconIndex = () => {
     const pageToIndex = {
       Home: 0,
@@ -39,14 +39,12 @@ export default function NavBar({
 
   const activeIcon = getActiveIconIndex();
 
-  // helper to compute inline styles for each button (3D transforms)
   const getButtonStyle = (index, isActive, isSpecial) => {
     let rotateY = isActive ? "0deg" : "5deg";
     let rotateX = isActive ? "0deg" : "5deg";
     let translateZ = isActive ? "20px" : isSpecial ? "15px" : "0px";
     let scale = isActive ? 1.1 : 1;
 
-    // when hovering over a non-special, non-active item, push it forward
     if (hoverIndex === index && !isSpecial && !isActive) {
       rotateY = "-10deg";
       rotateX = "-5deg";
@@ -141,7 +139,6 @@ export default function NavBar({
                         className="w-8 h-8 rounded-lg shadow-lg"
                         style={{ transform: "translateZ(10px)" }}
                       />
-                      {/* special glow layers */}
                       <div
                         className="absolute inset-0 rounded-xl opacity-30 blur-xl special-glow"
                         aria-hidden
@@ -168,7 +165,6 @@ export default function NavBar({
                     />
                   )}
 
-                  {/* active indicator (dot) */}
                   {isActive && !isSpecial && (
                     <div
                       className="absolute -bottom-1 left-1/2 transform -translate-x-1/2"
@@ -187,7 +183,6 @@ export default function NavBar({
                   )}
                 </button>
 
-                {/* tooltip on hover (only show when not active) */}
                 {hoverIndex === index && !isActive && (
                   <div
                     className="absolute -top-14 left-1/2 transform -translate-x-1/2 px-3 py-2 bg-black/90 backdrop-blur-sm rounded-lg text-xs text-white whitespace-nowrap transition-all duration-300 shadow-2xl border border-white/10"
@@ -208,7 +203,6 @@ export default function NavBar({
           })}
         </div>
 
-        {/* subtle inner glow */}
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
@@ -218,22 +212,8 @@ export default function NavBar({
           }}
         />
       </div>
-
-      {/* component-scoped styles */}
-      <style>{`
-        @keyframes float {
-          0%,100% {
-            transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(15px) translateY(0px);
-          }
-          50% {
-            transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(25px) translateY(-5px);
-          }
-        }
-        .special-glow {
-          pointer-events: none;
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
+
+export default NavigationBar;

@@ -1,7 +1,6 @@
 import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl';
 import { useEffect, useRef } from 'react';
-
-import './CircularGallery.css';
+import '../styles/circular-gallery.css';
 
 function debounce(func, wait) {
   let timeout;
@@ -455,7 +454,7 @@ class App {
   }
 }
 
-export default function CircularGallery({
+const CircularGallery = ({
   items,
   bend = 3,
   textColor = '#ffffff',
@@ -463,7 +462,7 @@ export default function CircularGallery({
   font = 'bold 30px Figtree',
   scrollSpeed = 2,
   scrollEase = 0.05
-}) {
+}) => {
   const containerRef = useRef(null);
   useEffect(() => {
     const app = new App(containerRef.current, { items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase });
@@ -473,3 +472,5 @@ export default function CircularGallery({
   }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
   return <div className="circular-gallery" ref={containerRef} />;
 }
+
+export default CircularGallery;

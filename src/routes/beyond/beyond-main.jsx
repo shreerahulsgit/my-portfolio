@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import Spline from "@splinetool/react-spline";
 
-const BeyondPortfolio = () => {
+const BeyondMain = () => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const sliderRef = useRef(null);
 
   useEffect(() => {
     setIsVisible(true);
@@ -86,17 +85,14 @@ const BeyondPortfolio = () => {
 
   return (
     <div className="h-screen text-white overflow-hidden relative flex items-center">
-      {/* Spline 3D Background */}
       <div className="absolute inset-0">
         <Spline
           scene="https://prod.spline.design/aBrOEZccG5o-XuUp/scene.splinecode"
           className="w-full h-full"
         />
-        {/* Light overlay for better text readability */}
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
-      {/* Cursor Glow */}
       <div
         className="absolute w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none transition-all duration-500 ease-out"
         style={{
@@ -105,9 +101,7 @@ const BeyondPortfolio = () => {
         }}
       />
 
-      {/* Main Container */}
       <div className="relative z-10 w-full h-full flex">
-        {/* Left Side - Hero Content */}
         <div className="w-1/2 flex flex-col justify-center px-12 lg:px-16">
           <div
             className={`transition-all duration-1000 ${
@@ -116,7 +110,6 @@ const BeyondPortfolio = () => {
                 : "opacity-0 translate-y-12"
             }`}
           >
-            {/* Small Label */}
             <div className="mb-6">
               <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
                 <p className="text-sm text-white/70 tracking-wider">
@@ -125,22 +118,19 @@ const BeyondPortfolio = () => {
               </div>
             </div>
 
-            {/* Main Title */}
             <h1 className="text-6xl lg:text-7xl font-black mb-6 leading-none">
               <span className="block text-white">LET'S EXPLORE</span>
               <span className="block text-white">BEYOND TECH</span>
             </h1>
 
-            {/* Description */}
             <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
               The things that inspire me beyond coding — stories, sounds,
               sports, and moments that fuel creativity.
             </p>
 
-            {/* Buttons */}
             <div className="flex gap-4">
               <button
-                onClick={() => navigate("/beyond-entry")}
+                onClick={() => navigate("/beyond")}
                 className="px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-semibold transition-all duration-300 flex items-center gap-2 hover:scale-105"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -157,7 +147,6 @@ const BeyondPortfolio = () => {
           </div>
         </div>
 
-        {/* Right Side - Card Slider */}
         <div className="w-1/2 flex items-center relative">
           <div
             className={`w-full transition-all duration-1000 delay-300 ${
@@ -166,7 +155,6 @@ const BeyondPortfolio = () => {
                 : "opacity-0 translate-x-12"
             }`}
           >
-            {/* Cards Container */}
             <div
               className="relative flex items-center justify-center h-full"
               style={{
@@ -179,7 +167,6 @@ const BeyondPortfolio = () => {
                 const isActive = index === currentSlide;
                 const distance = index - currentSlide;
 
-                // Only show 3 cards: prev, current, next
                 const isVisible = Math.abs(distance) <= 1;
                 if (!isVisible) return null;
 
@@ -218,7 +205,6 @@ const BeyondPortfolio = () => {
                           "all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                       }}
                     >
-                      {/* Background Image */}
                       <img
                         src={card.image}
                         alt={card.title}
@@ -229,10 +215,8 @@ const BeyondPortfolio = () => {
                         }}
                       />
 
-                      {/* Dark Overlay Gradient */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
 
-                      {/* Content */}
                       <div className="relative h-full flex flex-col justify-end p-6">
                         <div
                           className="space-y-3 transform translate-y-0 group-hover:-translate-y-2"
@@ -257,7 +241,6 @@ const BeyondPortfolio = () => {
                         </div>
                       </div>
 
-                      {/* Inner Border Glow on Active */}
                       <div
                         className={`absolute inset-0 rounded-3xl border-2 transition-all duration-700 ${
                           isActive ? "border-white/30" : "border-white/0"
@@ -272,9 +255,7 @@ const BeyondPortfolio = () => {
         </div>
       </div>
 
-      {/* Bottom Controls */}
       <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-8">
-        {/* Navigation Buttons */}
         <button
           onClick={handlePrev}
           className="w-12 h-12 rounded-full bg-white hover:bg-gray-200 border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
@@ -282,7 +263,6 @@ const BeyondPortfolio = () => {
           <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
 
-        {/* Progress Bar */}
         <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-white to-gray-300 transition-all duration-500 rounded-full"
@@ -297,13 +277,11 @@ const BeyondPortfolio = () => {
           <ChevronRight className="w-5 h-5 text-gray-600" />
         </button>
 
-        {/* Page Counter */}
         <div className="text-4xl font-bold text-white/80 ml-4">
           {currentSlide + 1}
         </div>
       </div>
 
-      {/* Footer Quote */}
       <div
         className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 delay-700 ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -341,4 +319,4 @@ const BeyondPortfolio = () => {
   );
 };
 
-export default BeyondPortfolio;
+export default BeyondMain;

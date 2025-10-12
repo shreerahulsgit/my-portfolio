@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Phone,
   MapPin,
@@ -9,12 +9,8 @@ import {
   Dribbble,
 } from "lucide-react";
 import Spline from "@splinetool/react-spline";
-import { useNavigate } from "react-router-dom";
-import TargetCursor from "../componentes/TargetCursor";
-import NavBar from "../componentes/NavBar";
 
-const ContactPage = () => {
-  const navigate = useNavigate();
+const ContactMain = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,7 +28,6 @@ const ContactPage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Simulate Spline loading
   useEffect(() => {
     const timer = setTimeout(() => setSplineLoaded(true), 2000);
     return () => clearTimeout(timer);
@@ -105,22 +100,10 @@ const ContactPage = () => {
       className="relative min-h-screen overflow-x-hidden"
       style={{ backgroundColor: "#222222", minHeight: "100vh" }}
     >
-      <TargetCursor />
-      <NavBar
-        isLoaded={isLoaded}
-        currentPage="Contact"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-      />
-      {/* Ensure full page coverage */}
       <div
         className="absolute inset-0 w-full h-full"
         style={{ backgroundColor: "#222222", zIndex: -1 }}
       ></div>
-      {/* Spline Background - Fixed and Full Screen */}
       <div className="fixed inset-0 z-0">
         <div className="w-full h-full">
           <Spline
@@ -131,10 +114,8 @@ const ContactPage = () => {
         </div>
       </div>
 
-      {/* Main Content Container with Glass Cards */}
       <div className="relative z-20 px-6 pt-20 pb-16">
         <div className="max-w-7xl mx-auto">
-          {/* Hero Title */}
           <div className="text-center mb-16">
             <h1
               className={`text-6xl md:text-7xl lg:text-8xl font-bold mb-6 transform transition-all duration-1000 ease-out ${
@@ -158,9 +139,7 @@ const ContactPage = () => {
             </p>
           </div>
 
-          {/* Contact Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Contact Info Glass Card */}
             <div
               className={`group relative backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-700 ease-out hover:scale-[1.02] ${
                 isLoaded
@@ -185,7 +164,6 @@ const ContactPage = () => {
                 e.currentTarget.style.borderColor = "rgba(248, 248, 248, 0.15)";
               }}
             >
-              {/* Subtle gradient overlay */}
               <div
                 className="absolute inset-0 rounded-3xl pointer-events-none"
                 style={{
@@ -203,7 +181,6 @@ const ContactPage = () => {
                 </h2>
 
                 <div className="space-y-8">
-                  {/* Visit Us */}
                   <div
                     className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 group/item cursor-pointer"
                     onMouseEnter={(e) =>
@@ -239,7 +216,6 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  {/* Chat to us */}
                   <div
                     className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 group/item cursor-pointer"
                     onMouseEnter={(e) =>
@@ -281,7 +257,6 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  {/* Call us */}
                   <div
                     className="flex items-start gap-4 p-4 rounded-2xl transition-all duration-300 group/item cursor-pointer"
                     onMouseEnter={(e) =>
@@ -320,7 +295,6 @@ const ContactPage = () => {
                     </div>
                   </div>
 
-                  {/* Social Media */}
                   <div className="p-4 rounded-2xl">
                     <h3
                       className="text-xl font-semibold mb-6"
@@ -371,7 +345,6 @@ const ContactPage = () => {
               </div>
             </div>
 
-            {/* Contact Form Glass Card */}
             <div
               className={`group relative backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-700 ease-out hover:scale-[1.02] ${
                 isLoaded
@@ -396,7 +369,6 @@ const ContactPage = () => {
                 e.currentTarget.style.borderColor = "rgba(248, 248, 248, 0.15)";
               }}
             >
-              {/* Subtle gradient overlay */}
               <div
                 className="absolute inset-0 rounded-3xl pointer-events-none"
                 style={{
@@ -677,26 +649,6 @@ const ContactPage = () => {
         </div>
       </div>
 
-      {/* Footer with Glass Effect */}
-      <footer className="relative z-20 mt-16">
-        <div
-          className="backdrop-blur-md py-8"
-          style={{
-            backgroundColor: "rgba(248, 248, 248, 0.05)",
-            borderTopWidth: "1px",
-            borderTopStyle: "solid",
-            borderTopColor: "rgba(248, 248, 248, 0.1)",
-          }}
-        >
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <p style={{ color: "#7B7B7B" }}>
-              © 2025 Your Portfolio. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
-
-      {/* Success Message with Glass Effect */}
       <div
         id="message-box"
         style={{
@@ -718,7 +670,6 @@ const ContactPage = () => {
         </div>
       </div>
 
-      {/* Loading Screen with Glass Effect */}
       {!splineLoaded && (
         <div
           className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
@@ -756,4 +707,4 @@ const ContactPage = () => {
   );
 };
 
-export default ContactPage;
+export default ContactMain;

@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Download, FileText, Eye } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import Spline from "@splinetool/react-spline";
-import NavBar from "../componentes/NavBar";
 
-const ResumePage = () => {
+const ResumeMain = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -30,7 +27,6 @@ const ResumePage = () => {
 
   return (
     <div className="min-h-screen relative bg-black">
-      {/* Spline Background */}
       <div className="fixed inset-0 z-0" style={{ pointerEvents: "auto" }}>
         <Spline
           scene="https://prod.spline.design/O9HVvHLsw6yzQ9GT/scene.splinecode"
@@ -48,22 +44,7 @@ const ResumePage = () => {
         />
       </div>
 
-      {/* Content Overlay */}
       <div className="relative z-10" style={{ pointerEvents: "none" }}>
-        {/* Add NavBar */}
-        <div style={{ pointerEvents: "auto" }}>
-          <NavBar
-            isLoaded={isLoaded}
-            currentPage="Resume"
-            onHomeClick={() => navigate("/")}
-            onAboutClick={() => navigate("/about")}
-            onResumeClick={() => navigate("/resume-landing")}
-            onContactClick={() => navigate("/contact")}
-            onSpecialClick={() => navigate("/beyond-entry")}
-          />
-        </div>
-
-        {/* Header Section with Glass Effect */}
         <header className="py-6" style={{ pointerEvents: "auto" }}>
           <div className="flex justify-center px-6">
             <div className="backdrop-blur-md bg-white/10 border border-white/20 shadow-lg rounded-xl p-6">
@@ -100,7 +81,6 @@ const ResumePage = () => {
           </div>
         </header>
 
-        {/* Resume Display */}
         <main className="flex-1 py-12 pb-24" style={{ pointerEvents: "auto" }}>
           <div className="flex justify-center px-6">
             <div className="w-full max-w-4xl">
@@ -113,7 +93,6 @@ const ResumePage = () => {
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
               >
-                {/* Glass Card Effect */}
                 <div
                   className={`backdrop-blur-xl bg-white/10 rounded-xl shadow-2xl border border-white/20 p-6 transform transition-all duration-500 ${
                     isHovering
@@ -134,7 +113,6 @@ const ResumePage = () => {
                       />
                     </div>
 
-                    {/* Floating indicator with glass effect */}
                     <div
                       className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 backdrop-blur-md ${
                         isHovering
@@ -151,7 +129,6 @@ const ResumePage = () => {
           </div>
         </main>
 
-        {/* Bottom Action Buttons with Glass Effect */}
         <footer
           className="backdrop-blur-md bg-white/10 border-t border-white/20 pt-10 pb-32"
           style={{ pointerEvents: "auto" }}
@@ -164,7 +141,6 @@ const ResumePage = () => {
                   : "translate-y-4 opacity-0"
               }`}
             >
-              {/* Download Button with Glass Effect */}
               <button
                 onClick={downloadResume}
                 className="group flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 shadow-lg hover:shadow-2xl backdrop-blur-xl bg-white/20 border-2 border-white/40 text-white hover:bg-white/30 hover:border-white/60"
@@ -174,7 +150,6 @@ const ResumePage = () => {
               </button>
             </div>
 
-            {/* Additional Info */}
             <div className="text-center mt-8 space-y-2 ">
               <p className="text-sm font-medium text-white/80 drop-shadow-md">
                 PDF Format • Mobile Optimized • Secure Download
@@ -191,7 +166,6 @@ const ResumePage = () => {
         </footer>
       </div>
 
-      {/* Loading Screen with Glass Effect */}
       {!splineLoaded && (
         <div
           className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
@@ -229,4 +203,4 @@ const ResumePage = () => {
   );
 };
 
-export default ResumePage;
+export default ResumeMain;

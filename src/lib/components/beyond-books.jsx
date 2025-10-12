@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BookOpen, Sparkles, ArrowRight, Star } from "lucide-react";
+import '../styles/beyond-books.css';
 
 const books = [
   {
@@ -59,7 +60,7 @@ const books = [
   },
 ];
 
-export default function BooksShelf() {
+const BeyondBooks = () => {
   const [scrollY, setScrollY] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [activeCard, setActiveCard] = useState(null);
@@ -85,14 +86,12 @@ export default function BooksShelf() {
 
   return (
     <div className="relative min-h-screen bg-black overflow-x-hidden">
-      {/* Enhanced Background */}
       <div className="fixed inset-0 bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-purple-900/10 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/5 via-transparent to-transparent" />
       </div>
 
-      {/* Mouse Follower Gradient */}
       <div
         className="fixed inset-0 opacity-20 pointer-events-none transition-opacity duration-300"
         style={{
@@ -100,7 +99,6 @@ export default function BooksShelf() {
         }}
       />
 
-      {/* Floating Particles - Optimized */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {[...Array(40)].map((_, i) => (
           <div
@@ -121,14 +119,12 @@ export default function BooksShelf() {
         ))}
       </div>
 
-      {/* Spotlight Effects */}
       <div className="fixed top-0 left-1/4 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" />
       <div
         className="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[100px] pointer-events-none animate-pulse-slow"
         style={{ animationDelay: "2s" }}
       />
 
-      {/* Header Section */}
       <header className="relative z-10 text-center pt-20 pb-16 px-4">
         <div className="inline-flex items-center gap-3 mb-6 animate-fadeIn">
           <Sparkles className="w-5 h-5 text-blue-400 animate-pulse" />
@@ -153,7 +149,6 @@ export default function BooksShelf() {
           life, work, and creativity
         </p>
 
-        {/* Scroll Indicator */}
         <div className="mt-12 animate-bounce-slow">
           <div className="w-6 h-10 border-2 border-white/20 rounded-full mx-auto relative">
             <div className="w-1.5 h-2 bg-white/60 rounded-full absolute left-1/2 -translate-x-1/2 top-2 animate-pulse" />
@@ -161,7 +156,6 @@ export default function BooksShelf() {
         </div>
       </header>
 
-      {/* Books Grid - Single Page */}
       <div className="relative z-10 px-4 md:px-8 lg:px-16 xl:px-24 pb-32">
         <div className="max-w-7xl mx-auto space-y-8">
           {books.map((book, index) => (
@@ -173,28 +167,23 @@ export default function BooksShelf() {
               onMouseLeave={() => setActiveCard(null)}
             >
               <div className="group relative w-full rounded-2xl overflow-hidden transition-all duration-700 hover:scale-[1.01]">
-                {/* Apple Glass Background - Increased opacity for better contrast */}
                 <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.8)]" />
 
-                {/* Glass Shine Effect */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
                 </div>
 
-                {/* Gradient Border on Hover */}
                 <div
                   className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-r ${book.accent} p-[1px]`}
                 >
                   <div className="w-full h-full bg-gray-900/90 backdrop-blur-xl rounded-2xl" />
                 </div>
 
-                {/* Glow Effect */}
                 <div
                   className={`absolute -inset-1 ${book.bgGlow} rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-all duration-700`}
                 />
 
                 <div className="relative p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
-                  {/* Book Cover */}
                   <div className="w-full md:w-2/5 lg:w-1/3 h-56 md:h-64 relative overflow-hidden rounded-xl group-hover:scale-[1.02] transition-transform duration-700">
                     <div
                       className={`absolute inset-0 ${book.bgGlow} blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700`}
@@ -207,10 +196,8 @@ export default function BooksShelf() {
                         filter: "brightness(0.9) contrast(1.1) saturate(1.2)",
                       }}
                     />
-                    {/* Image Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                    {/* Floating Badge */}
                     <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:translate-y-0 -translate-y-2">
                       <div className="flex items-center gap-1">
                         {[...Array(book.rating)].map((_, i) => (
@@ -223,7 +210,6 @@ export default function BooksShelf() {
                     </div>
                   </div>
 
-                  {/* Book Info */}
                   <div className="flex-1 space-y-3 md:space-y-4">
                     <div>
                       <h3 className="text-2xl md:text-3xl lg:text-4xl text-white font-light tracking-tight group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text transition-all duration-500">
@@ -256,14 +242,12 @@ export default function BooksShelf() {
         </div>
       </div>
 
-      {/* Outro Section */}
       <div
         className={`relative z-20 min-h-screen flex flex-col items-center justify-center px-4 transition-all duration-1000 ${
           isOutroVisible ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <div className="text-center space-y-10 max-w-5xl relative">
-          {/* Decorative Elements */}
           <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow" />
           <div
             className="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
@@ -299,7 +283,6 @@ export default function BooksShelf() {
               they're lived in pieces."
             </p>
 
-            {/* CTA Button */}
             <div className="pt-8">
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -314,85 +297,8 @@ export default function BooksShelf() {
           </div>
         </div>
       </div>
-
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px) translateX(0px);
-          }
-          25% {
-            transform: translateY(-20px) translateX(10px);
-          }
-          50% {
-            transform: translateY(-10px) translateX(-10px);
-          }
-          75% {
-            transform: translateY(-30px) translateX(5px);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.3;
-          }
-          50% {
-            opacity: 0.6;
-          }
-        }
-
-        @keyframes bounce-slow {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 1s ease-out forwards;
-          opacity: 0;
-        }
-
-        .animate-slideUp {
-          animation: slideUp 0.8s ease-out forwards;
-          opacity: 0;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 4s ease-in-out infinite;
-        }
-
-        .animate-bounce-slow {
-          animation: bounce-slow 2s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
+
+export default BeyondBooks;

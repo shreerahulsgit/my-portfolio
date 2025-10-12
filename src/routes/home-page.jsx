@@ -1,16 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import Spline from "@splinetool/react-spline";
-import TargetCursor from "../componentes/TargetCursor";
-import NavBar from "../componentes/NavBar"; // ✅ Import separated Navbar
 
-export default function MinimalDeveloperPortfolio() {
-  const navigate = useNavigate();
-  // Ultra-smooth looping typewriter animation
+const HomePage = () => {
   const messages = [
     "Yo! I’m Shree Rahul :)",
     "Oh wait! this thing on the right stole my intro :(",
-    "To actually know me, hit the About section.",
+    "To actually know me, hit the about section.",
   ];
   const highlightWords = ["Shree Rahul :)", "stole my intro :(", "About"];
   const [displayedText, setDisplayedText] = useState("");
@@ -19,13 +14,11 @@ export default function MinimalDeveloperPortfolio() {
   const [typingStarted, setTypingStarted] = useState(false);
   const typingTimeout = useRef(null);
 
-  // Start typing after 2s
   useEffect(() => {
     const startTimeout = setTimeout(() => setTypingStarted(true), 2000);
     return () => clearTimeout(startTimeout);
   }, []);
 
-  // Typewriter effect
   useEffect(() => {
     if (!typingStarted) return;
     const currentMessage = messages[msgIdx];
@@ -61,9 +54,7 @@ export default function MinimalDeveloperPortfolio() {
         fontFamily: "Aeonik Trial, system-ui, -apple-system, sans-serif",
       }}
     >
-      <TargetCursor spinDuration={2} hideDefaultCursor={true} />
 
-      {/* Fullscreen Spline 3D Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <Spline
           scene="https://prod.spline.design/ZgCNkRB0aMxXyHjI/scene.splinecode"
@@ -76,7 +67,6 @@ export default function MinimalDeveloperPortfolio() {
         />
       </div>
 
-      {/* Left-side Typing Animation */}
       <div className="absolute top-0 left-0 h-full flex items-center z-10 w-full md:w-1/2 px-6 md:px-16 lg:px-24">
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap"
@@ -154,10 +144,8 @@ export default function MinimalDeveloperPortfolio() {
         `}</style>
       </div>
 
-      {/* Overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-transparent to-gray-900/30 pointer-events-none"></div>
 
-      {/* Attribution */}
       <div
         className={`absolute bottom-4 right-4 z-30 transition-all duration-1000 ${
           isLoaded ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"
@@ -170,19 +158,6 @@ export default function MinimalDeveloperPortfolio() {
         </div>
       </div>
 
-      {/* ✅ Navbar imported with navigation handlers */}
-      <NavBar
-        isLoaded={isLoaded}
-        currentPage="Home"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-        onSkillsClick={() => navigate("/skills-landing")}
-      />
-
-      {/* Floating Particles */}
       <div className="absolute inset-0 pointer-events-none z-5">
         {[...Array(20)].map((_, i) => (
           <div
@@ -198,7 +173,6 @@ export default function MinimalDeveloperPortfolio() {
         ))}
       </div>
 
-      {/* Subtle Grid Pattern */}
       <div className="absolute inset-0 opacity-5 pointer-events-none z-5">
         <div
           className="w-full h-full"
@@ -212,7 +186,6 @@ export default function MinimalDeveloperPortfolio() {
         />
       </div>
 
-      {/* Loading Screen with Glass Effect */}
       {!splineLoaded && (
         <div
           className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
@@ -249,3 +222,5 @@ export default function MinimalDeveloperPortfolio() {
     </div>
   );
 }
+
+export default HomePage;

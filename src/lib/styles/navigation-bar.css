@@ -1,0 +1,12 @@
+@keyframes float {
+    0%,100% {
+    transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(15px) translateY(0px);
+    }
+    50% {
+    transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(25px) translateY(-5px);
+    }
+}
+.special-glow {
+    pointer-events: none;
+    animation: float 3s ease-in-out infinite;
+}

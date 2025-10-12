@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Spline from "@splinetool/react-spline";
+import { useState, useEffect } from "react";
 import {
   SiExpress,
   SiNodedotjs,
@@ -30,8 +28,7 @@ import {
   FaDatabase,
   FaTools,
 } from "react-icons/fa";
-import NavBar from "../componentes/NavBar";
-import TargetCursor from "../componentes/TargetCursor";
+import Spline from "@splinetool/react-spline";
 
 const skillCategories = [
   {
@@ -380,7 +377,6 @@ const SkillCard = ({ skill, delay }) => {
                 boxShadow: isHovered ? `0 0 20px ${skill.color}80` : "none",
               }}
             >
-              {/* Animated shine */}
               <div
                 className="absolute inset-0 rounded-full"
                 style={{
@@ -394,7 +390,6 @@ const SkillCard = ({ skill, delay }) => {
         </div>
       </div>
 
-      {/* Border glow */}
       <div
         className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{
@@ -448,7 +443,6 @@ const CategorySection = ({ category, index }) => {
         isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"
       }`}
     >
-      {/* Category Header with Glass Effect */}
       <div
         className="relative overflow-hidden rounded-2xl mb-8 group cursor-default"
         style={{
@@ -476,7 +470,6 @@ const CategorySection = ({ category, index }) => {
           </span>
         </div>
 
-        {/* Animated gradient line */}
         <div
           className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           style={{
@@ -485,7 +478,6 @@ const CategorySection = ({ category, index }) => {
         />
       </div>
 
-      {/* Skills Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {category.skills.map((skill, idx) => (
           <SkillCard key={idx} skill={skill} delay={index * 200 + idx * 100} />
@@ -495,8 +487,7 @@ const CategorySection = ({ category, index }) => {
   );
 };
 
-export default function SkillPage() {
-  const navigate = useNavigate();
+const SkillsMain = () => {
   const [scrollY, setScrollY] = useState(0);
   const [splineLoaded, setSplineLoaded] = useState(false);
   const [splineError, setSplineError] = useState(false);
@@ -509,7 +500,6 @@ export default function SkillPage() {
 
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Spline 3D Background with Fallback */}
       <div className="fixed inset-0 z-0">
         {!splineError ? (
           <Spline
@@ -529,16 +519,12 @@ export default function SkillPage() {
         )}
       </div>
 
-      {/* Subtle ambient overlay */}
       <div
         className="fixed inset-0 z-1 pointer-events-none"
         style={{ background: "rgba(0, 0, 0, 0.3)" }}
       />
 
-      <TargetCursor />
-
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Hero Header */}
         <div className="text-center mb-20">
           <div
             className="inline-block mb-6 px-6 py-2 rounded-full text-sm font-medium"
@@ -566,24 +552,11 @@ export default function SkillPage() {
           </p>
         </div>
 
-        {/* Category Sections */}
         {skillCategories.map((category, index) => (
           <CategorySection key={index} category={category} index={index} />
         ))}
       </div>
 
-      <NavBar
-        isLoaded={true}
-        currentPage="Skills"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-        onSkillsClick={() => navigate("/skills-landing")}
-      />
-
-      {/* Loading Screen */}
       {!splineLoaded && (
         <div className="fixed inset-0 bg-gray-900 z-[100] flex items-center justify-center">
           <div className="flex flex-col items-center">
@@ -597,3 +570,5 @@ export default function SkillPage() {
     </div>
   );
 }
+
+export default SkillsMain;

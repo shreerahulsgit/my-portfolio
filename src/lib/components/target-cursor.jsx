@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { gsap } from 'gsap';
-import './TargetCursor.css';
+import '../styles/target-cursor.css';
 
 const TargetCursor = ({ targetSelector = '.cursor-target', spinDuration = 2, hideDefaultCursor = true }) => {
   const cursorRef = useRef(null);
@@ -31,7 +31,11 @@ const TargetCursor = ({ targetSelector = '.cursor-target', spinDuration = 2, hid
 
     const originalCursor = document.body.style.cursor;
     if (hideDefaultCursor) {
-      document.body.style.cursor = 'none';
+      document.body.style.cursor = "none";
+      const interactive = document.querySelectorAll("button, a, input, select, textarea");
+      interactive.forEach(el => {
+        el.style.cursor = "none";
+      });
     }
 
     const cursor = cursorRef.current;
@@ -95,9 +99,6 @@ const TargetCursor = ({ targetSelector = '.cursor-target', spinDuration = 2, hid
 
     window.addEventListener('scroll', scrollHandler, { passive: true });
 
-    //---------------------------------------------------------------
-    // This code for onclick animation
-
     window.addEventListener('mousemove', moveHandler);
     const mouseDownHandler = () => {
       if (!dotRef.current) return;
@@ -105,7 +106,6 @@ const TargetCursor = ({ targetSelector = '.cursor-target', spinDuration = 2, hid
       gsap.to(cursorRef.current, { scale: 0.6, duration: 0.2 });
     };
 
-    // Animate it back to its original size
     const mouseUpHandler = () => {
       if (!dotRef.current) return;
       gsap.to(dotRef.current, { scale: 1, duration: 0.3 });
@@ -115,7 +115,6 @@ const TargetCursor = ({ targetSelector = '.cursor-target', spinDuration = 2, hid
     window.addEventListener('mousedown', mouseDownHandler);
     window.addEventListener('mouseup', mouseUpHandler);
 
-    //----------------------------------------------------------------
     const enterHandler = e => {
       const directTarget = e.target;
 

@@ -51,14 +51,11 @@ body {
   overflow-y: auto;
 }
 
-/* Spline wrapper styles for scroll + interaction support */
 .spline-wrapper {
-  /* Enable touch scrolling on mobile */
   touch-action: pan-y pan-x;
 }
 
 .spline-wrapper canvas {
-  /* Allow interactions but also support touch scrolling */
   touch-action: pan-y pan-x;
 }
 
@@ -78,9 +75,11 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;

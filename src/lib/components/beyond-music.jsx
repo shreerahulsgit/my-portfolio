@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Music, Play, Pause, Volume2, Sunrise, Sunset, Moon, Cloud } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Music, Play, Pause, Sunrise, Sunset, Moon, Cloud } from 'lucide-react';
 
-export default function MusicSoundscape() {
+const BeyondMusic = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentQuote, setCurrentQuote] = useState(0);
   const [hoveredMood, setHoveredMood] = useState(null);
@@ -65,10 +65,8 @@ export default function MusicSoundscape() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden relative">
-      {/* Animated Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-black via-gray-900 to-purple-950 opacity-80"></div>
       
-      {/* Floating Particles */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <div
@@ -85,7 +83,6 @@ export default function MusicSoundscape() {
       </div>
 
       <div className="relative z-10">
-        {/* Hero Section */}
         <section className="min-h-screen flex flex-col items-center justify-center px-6 relative">
           <div className="absolute inset-0 flex items-center justify-center opacity-10">
             <Music className="w-96 h-96 text-blue-500 animate-pulse" />
@@ -99,7 +96,6 @@ export default function MusicSoundscape() {
               Every beat tells a story.
             </p>
             
-            {/* Floating Equalizer Bars */}
             <div className="flex gap-2 justify-center mt-12">
               {[...Array(5)].map((_, i) => (
                 <div
@@ -115,23 +111,19 @@ export default function MusicSoundscape() {
           </div>
         </section>
 
-        {/* Now Playing Section */}
         <section className="px-6 py-20">
           <div className="max-w-2xl mx-auto">
             <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-500 group">
               <div className="flex items-center gap-6">
-                {/* Album Art */}
                 <div className="relative">
                   <div className="w-32 h-32 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl shadow-lg group-hover:shadow-purple-500/50 transition-all duration-500 group-hover:scale-105"></div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-2xl"></div>
                 </div>
 
-                {/* Song Info */}
                 <div className="flex-1">
                   <h3 className="text-2xl font-semibold mb-1">Midnight Dreams</h3>
                   <p className="text-gray-400 mb-4">Synthetic Echoes</p>
                   
-                  {/* Waveform */}
                   <div className="flex gap-1 h-12 items-end mb-4">
                     {[...Array(30)].map((_, i) => (
                       <div
@@ -145,7 +137,6 @@ export default function MusicSoundscape() {
                     ))}
                   </div>
 
-                  {/* Controls */}
                   <button
                     onClick={() => setIsPlaying(!isPlaying)}
                     className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
@@ -159,7 +150,6 @@ export default function MusicSoundscape() {
           </div>
         </section>
 
-        {/* Mood-Based Music Zones */}
         <section className="px-6 py-20">
           <h2 className="text-5xl font-bold text-center mb-16 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             Mood Zones
@@ -186,7 +176,6 @@ export default function MusicSoundscape() {
           </div>
         </section>
 
-        {/* Visual Music Gallery */}
         <section className="px-6 py-20">
           <h2 className="text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
             My Collection
@@ -216,7 +205,6 @@ export default function MusicSoundscape() {
           </div>
         </section>
 
-        {/* Lyric & Quote Section */}
         <section className="px-6 py-20">
           <div className="max-w-4xl mx-auto text-center min-h-[200px] flex items-center justify-center">
             <div className="relative">
@@ -237,7 +225,6 @@ export default function MusicSoundscape() {
           </div>
         </section>
 
-        {/* Footer */}
         <section className="px-6 py-20 text-center">
           <div className="inline-block">
             <p className="text-2xl md:text-3xl text-gray-400 font-light animate-pulse">
@@ -251,3 +238,5 @@ export default function MusicSoundscape() {
     </div>
   );
 }
+
+export default BeyondMusic;

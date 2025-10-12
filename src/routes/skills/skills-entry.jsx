@@ -1,41 +1,21 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Spline from "@splinetool/react-spline";
-import NavBar from "../componentes/NavBar";
-import TargetCursor from "../componentes/TargetCursor";
 
-export default function SkillLanding() {
+const SkillsEntry = () => {
   const navigate = useNavigate();
   const [splineLoaded, setSplineLoaded] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
 
   return (
     <div className="bg-black text-white min-h-screen">
-      <TargetCursor />
-
-      <NavBar
-        isLoaded={isLoaded}
-        currentPage="Skills"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-        onSkillsClick={() => navigate("/skills-landing")}
-      />
-
       <main className="relative w-full h-screen overflow-hidden bg-black">
-        {/* Interactive Spline Component */}
         <div className="absolute inset-0 z-10">
           <Spline
             scene="https://prod.spline.design/bFKbEXmvDBJsP-cB/scene.splinecode"
             onLoad={() => {
               setSplineLoaded(true);
-              setIsLoaded(true);
             }}
             onError={() => {
-              // Fallback if Spline fails to load
-              setIsLoaded(true);
               setSplineLoaded(true);
             }}
             style={{
@@ -48,16 +28,15 @@ export default function SkillLanding() {
           />
         </div>
 
-        {/* Enter Button - Floating above interactive Spline */}
         <div
           className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
           style={{
-            marginLeft: "-10px", // Adjust LEFT(-) / RIGHT(+)
-            marginTop: "220px", // Adjust UP(-) / DOWN(+)
+            marginLeft: "-10px",
+            marginTop: "220px",
           }}
         >
           <button
-            onClick={() => navigate("/skills")}
+            onClick={() => navigate("/skills/details")}
             className="group relative overflow-hidden rounded-3xl px-6 py-2.5 backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl hover:bg-white/15 hover:border-white/30 transition-all duration-300 ease-out hover:scale-105 active:scale-95 pointer-events-auto"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -69,7 +48,6 @@ export default function SkillLanding() {
         </div>
       </main>
 
-      {/* Loading Screen with Glass Effect */}
       {!splineLoaded && (
         <div
           className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
@@ -106,3 +84,5 @@ export default function SkillLanding() {
     </div>
   );
 }
+
+export default SkillsEntry;

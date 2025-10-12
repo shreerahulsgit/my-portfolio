@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
-import NavBar from "../componentes/NavBar";
-import TargetCursor from "../componentes/TargetCursor";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Globe } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const AboutMe = () => {
+const AboutPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -45,19 +43,7 @@ const AboutMe = () => {
         fontFamily: "Aeonik Trial, system-ui, -apple-system, sans-serif",
       }}
     >
-      <TargetCursor spinDuration={2} hideDefaultCursor={true} />
-      <NavBar
-        isLoaded={true}
-        currentPage="About"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-        onSkillsClick={() => navigate("/skills-landing")}
-      />
 
-      {/* Top left 'Developer' label and vertical line */}
       <div className="absolute top-8 left-8 flex flex-col items-center z-40">
         <span className="text-2xl lg:text-3xl font-bold text-[#222222] mb-2">
           Developer
@@ -68,18 +54,15 @@ const AboutMe = () => {
         ></div>
       </div>
 
-      {/* Bottom left '2024' label */}
       <div className="absolute bottom-8 left-8 z-40">
         <span className="text-lg lg:text-xl font-bold text-[#7B7B7B]">
           2024
         </span>
       </div>
 
-      {/* Hero Section */}
       <div className="relative min-h-screen flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content */}
             <div
               className={`space-y-12 transition-all duration-1000 ease-out ${
                 isVisible
@@ -87,7 +70,6 @@ const AboutMe = () => {
                   : "opacity-0 -translate-x-8"
               }`}
             >
-              {/* Stats in top left */}
               <div className="flex space-x-12 text-sm">
                 <div>
                   <div
@@ -119,7 +101,6 @@ const AboutMe = () => {
                 </div>
               </div>
 
-              {/* Main Hello Text */}
               <div className="space-y-6">
                 <h1
                   className="text-[8rem] lg:text-[15rem] font-bold leading-none tracking-tight"
@@ -142,7 +123,6 @@ const AboutMe = () => {
               </div>
             </div>
 
-            {/* Right Image */}
             <div
               className={`relative transition-all duration-1000 ease-out ${
                 isVisible
@@ -156,7 +136,6 @@ const AboutMe = () => {
             </div>
           </div>
 
-          {/* Scroll Down Indicator */}
           <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
             <div className="flex flex-col items-center space-y-2 animate-bounce">
               <span
@@ -184,14 +163,11 @@ const AboutMe = () => {
         </div>
       </div>
 
-      {/* Content Section */}
-      <div className="relative z-30 space-y-8">
-        {/* About Me Card */}
+      <div className="relative z-25 space-y-8">
         <div>
           <div className="bg-white rounded-3xl p-12 shadow-lg min-h-screen flex flex-col justify-center">
             <div className="max-w-6xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-0 items-center">
-                {/* Left side - Images */}
                 <div className="space-y-6 ml-2 lg:ml-4">
                   <div className="max-w-[225px] rounded-2xl overflow-hidden bg-white p-2">
                     <img
@@ -201,7 +177,6 @@ const AboutMe = () => {
                     />
                   </div>
                 </div>
-                {/* Right side - Content */}
                 <div className="ml-2 lg:ml-4">
                   <h2
                     className="text-5xl lg:text-6xl font-bold mb-8"
@@ -227,12 +202,10 @@ const AboutMe = () => {
           </div>
         </div>
 
-        {/* Education Card */}
         <div>
           <div className="bg-white rounded-3xl p-8 shadow-lg flex flex-col justify-center">
             <div className="max-w-6xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-8 items-center">
-                {/* Left side - Education Content */}
                 <div>
                   <h2
                     className="text-4xl lg:text-5xl font-bold mb-6"
@@ -266,7 +239,6 @@ const AboutMe = () => {
                   </div>
                 </div>
 
-                {/* Right side - Image */}
                 <div className="space-y-6 flex justify-center">
                   <div className="w-1/2 rounded-2xl overflow-hidden">
                     <img
@@ -281,7 +253,6 @@ const AboutMe = () => {
           </div>
         </div>
 
-        {/* Experience & Process Card */}
         <div>
           <div className="bg-white rounded-3xl p-12 shadow-lg min-h-screen flex flex-col justify-center">
             <div className="max-w-4xl mx-auto">
@@ -293,7 +264,6 @@ const AboutMe = () => {
               </h2>
 
               <div className="space-y-8">
-                {/* Web Development Intern */}
                 <div className="flex items-start space-x-6 p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors duration-300">
                   <div className="flex-shrink-0 w-12 h-12 bg-black rounded-full flex items-center justify-center">
                     <span className="text-white text-lg font-bold">1</span>
@@ -355,7 +325,6 @@ const AboutMe = () => {
           </div>
         </div>
 
-        {/* NEW CERTIFICATIONS SECTION STARTS HERE */}
         <div>
           <div className="bg-white rounded-3xl p-12 shadow-lg min-h-screen flex flex-col justify-center">
             <div className="max-w-7xl mx-auto w-full">
@@ -367,7 +336,6 @@ const AboutMe = () => {
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                {/* Certificate Card 1: AWS Cloud Practitioner */}
                 <div className="group bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col text-center items-center overflow-hidden">
                   <div className="w-full aspect-video bg-gray-200">
                     <img
@@ -377,11 +345,11 @@ const AboutMe = () => {
                     />
                   </div>
                   <div className="p-6 flex flex-col items-center flex-grow w-full">
-                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10 bg-white">
+                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10">
                       <img
-                        src="https://res.cloudinary.com/dqqrrgdwd/image/upload/v1769869680/aws_e867ou.png"
+                        src="https://cloudinary-marketing-res.cloudinary.com/image/upload/f_auto,q_auto/v1688759801/integ-AWS-logo_whiteAWS"
                         alt="AWS Logo"
-                        className="h-10 w-10"
+                        className="h-10 w-10 object-cover"
                       />
                     </div>
                     <h3
@@ -401,7 +369,6 @@ const AboutMe = () => {
                   </div>
                 </div>
 
-                {/* Certificate Card 2: Dynamic Web Development */}
                 <div className="group bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col text-center items-center overflow-hidden">
                   <div className="w-full aspect-video bg-gray-200">
                     <img
@@ -411,8 +378,8 @@ const AboutMe = () => {
                     />
                   </div>
                   <div className="p-6 flex flex-col items-center flex-grow w-full">
-                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10 bg-white">
-                      <Globe className="h-10 w-10 text-black" />
+                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10">
+                      <Globe className="h-10 w-10 text-white" />
                     </div>
                     <h3
                       className="text-xl font-bold mb-4"
@@ -431,7 +398,6 @@ const AboutMe = () => {
                   </div>
                 </div>
 
-                {/* Certificate Card 3: Python Programming */}
                 <div className="group bg-gray-50 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col text-center items-center overflow-hidden">
                   <div className="w-full aspect-video bg-gray-200">
                     <img
@@ -441,9 +407,9 @@ const AboutMe = () => {
                     />
                   </div>
                   <div className="p-6 flex flex-col items-center flex-grow w-full">
-                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10 bg-white">
+                    <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 -mt-16 border-4 border-white z-10">
                       <img
-                        src="https://res.cloudinary.com/dqqrrgdwd/image/upload/v1769869688/python_f3j45t.png"
+                        src="https://img.icons8.com/?size=96&id=13441&format=png"
                         alt="Python Logo"
                         className="h-10 w-10"
                       />
@@ -466,7 +432,6 @@ const AboutMe = () => {
                 </div>
               </div>
             </div>
-            {/* View All Button */}
             <div className="mt-16 text-center">
               <button
                 className="px-8 py-4 font-semibold text-black bg-white border-2 border-gray-200 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95"
@@ -477,9 +442,7 @@ const AboutMe = () => {
             </div>
           </div>
         </div>
-        {/* NEW CERTIFICATIONS SECTION ENDS HERE */}
 
-        {/* Contact Card */}
         <div>
           <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-12 shadow-lg min-h-screen flex flex-col justify-center text-white">
             <div className="max-w-4xl mx-auto text-center">
@@ -530,4 +493,4 @@ const AboutMe = () => {
   );
 };
 
-export default AboutMe;
+export default AboutPage;

@@ -1,56 +1,38 @@
-import React, { useState } from "react";
-import Spline from "@splinetool/react-spline";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TargetCursor from "../../componentes/TargetCursor";
-import NavBar from "../../componentes/NavBar";
+import Spline from "@splinetool/react-spline";
 
-export default function StickersPage() {
+const BeyondEntry = () => {
   const navigate = useNavigate();
-  const [isLoaded, setIsLoaded] = useState(false);
   const [splineLoaded, setSplineLoaded] = useState(false);
 
   return (
     <div className="bg-black text-white min-h-screen">
-      <TargetCursor />
-      <NavBar
-        isLoaded={isLoaded}
-        currentPage="Special"
-        onHomeClick={() => navigate("/")}
-        onAboutClick={() => navigate("/about")}
-        onResumeClick={() => navigate("/resume-landing")}
-        onContactClick={() => navigate("/contact")}
-        onSpecialClick={() => navigate("/beyond-entry")}
-      />
-
       <main className="relative w-full h-screen overflow-hidden bg-black">
-        {/* Spline Component */}
         <div className="absolute inset-0 z-0">
           <Spline
             scene="https://prod.spline.design/r8nWpxQAvsU04S0A/scene.splinecode"
             onLoad={() => {
-              setIsLoaded(true);
               setSplineLoaded(true);
             }}
           />
         </div>
 
-        {/* Welcome Text at Top Center */}
         <div className="absolute top-12 left-0 right-0 z-10 flex justify-center">
           <h1 className="text-white text-4xl md:text-5xl font-bold tracking-wider drop-shadow-2xl">
             WELCOME TO BEYOND THE PORTFOLIO
           </h1>
         </div>
 
-        {/* Transparent Glass Button - Fully Centered */}
         <div
           className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
           style={{
-            marginLeft: "-120px", // Adjust LEFT(-) / RIGHT(+)
-            marginTop: "47px", // Adjust UP(-) / DOWN(+)
+            marginLeft: "-120px",
+            marginTop: "47px",
           }}
         >
           <button
-            onClick={() => navigate("/beyond-home")}
+            onClick={() => navigate("/beyond/overview")}
             className="group relative rounded-2xl px-10 py-4 bg-transparent border-none outline-none focus:outline-none focus:ring-0 hover:scale-105 active:scale-95 transition-all duration-300 ease-out"
           >
             <span className="relative text-white font-semibold text-lg tracking-widest drop-shadow-lg"></span>
@@ -58,7 +40,6 @@ export default function StickersPage() {
         </div>
       </main>
 
-      {/* Loading Screen with Glass Effect */}
       {!splineLoaded && (
         <div
           className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
@@ -95,3 +76,5 @@ export default function StickersPage() {
     </div>
   );
 }
+
+export default BeyondEntry;
