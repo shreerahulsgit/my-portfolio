@@ -1,9 +1,9 @@
 @keyframes float {
     0%,100% {
-    transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(15px) translateY(0px);
+        transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(15px) translateY(0px);
     }
     50% {
-    transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(25px) translateY(-5px);
+        transform: perspective(1000px) rotateY(5deg) rotateX(5deg) translateZ(25px) translateY(-5px);
     }
 }
 .special-glow {
