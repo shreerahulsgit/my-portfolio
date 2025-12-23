@@ -10,6 +10,9 @@ const ProjectsPage = lazy(() => import('./routes/project-page.jsx'));
 const BeyondMain = lazy(() => import('./routes/beyond/beyond-main.jsx'));
 const BeyondBooks = lazy(() => import('./routes/beyond/beyond-books.jsx'));
 const BeyondMusic = lazy(() => import('./routes/beyond/beyond-music.jsx'));
+const BeyondMovie = lazy(() => import('./routes/beyond/beyond-movie.jsx'));
+const BeyondSport = lazy(() => import('./routes/beyond/beyond-sport.jsx'));
+const BeyondRandom = lazy(() => import('./routes/beyond/beyond-personal.jsx'));
 
 const ResumeMain = lazy(() => import('./routes/resume-main.jsx'));
 const ContactMain = lazy(() => import('./routes/contact-main.jsx'));
@@ -23,6 +26,9 @@ const routeMap = {
     '/projects': 'Projects',
     '/beyond/books': 'Special',
     '/beyond/music': 'Special',
+    '/beyond/movies': 'Special',
+    '/beyond/sports': 'Special',
+    '/beyond/random': 'Special',
     '/resume': 'Resume',
     '/contact': 'Contact',
     '/skills': 'Skills',
@@ -91,6 +97,9 @@ export default function App() {
                         <Route path="/beyond" element={<BeyondMain />} />
                         <Route path="/beyond/books" element={<BeyondBooks />} />
                         <Route path="/beyond/music" element={<BeyondMusic />} />
+                        <Route path="/beyond/movies" element={<BeyondMovie />} />
+                        <Route path="/beyond/sports" element={<BeyondSport />} />
+                        <Route path="/beyond/random" element={<BeyondRandom />} />
                         <Route
                             path="/beyond/*"
                             element={<Navigate to="/beyond" replace />}

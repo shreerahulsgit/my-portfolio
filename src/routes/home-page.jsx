@@ -4,6 +4,206 @@ import LoadingOverlay from "../lib/components/loading-overlay.jsx";
 import SplineMasking from "../lib/components/spline-masking.jsx";
 import Spline from "@splinetool/react-spline";
 
+// Charge Up Animation Component
+const ChargeUpAnimation = ({ onComplete }) => {
+  const [count, setCount] = useState(100);
+  const [phase, setPhase] = useState("counting"); // counting, dropping, expanding, done
+  const [showChargeText, setShowChargeText] = useState(false);
+  const [expandScale, setExpandScale] = useState(0);
+  const [ballY, setBallY] = useState(48); // Ball sits ON the line (line is at 50%)
+  const animationRef = useRef(null);
+
+  // Line width based on count (100% at 100, 0% at 0) - shrinks from right to left
+  const lineWidth = (count / 100) * 40; // 40vw max width
+
+  // Countdown from 100 to 0, then immediately start dropping
+  useEffect(() => {
+    if (phase !== "counting") return;
+
+    const interval = setInterval(() => {
+      setCount((prev) => {
+        if (prev <= 0) {
+          clearInterval(interval);
+          setShowChargeText(true); // Show charge text immediately
+          setPhase("dropping"); // Start dropping immediately
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 25); // ~2.5 seconds total
+
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  // Ball falling from line to bottom with realistic slow gravity
+  useEffect(() => {
+    if (phase !== "dropping") return;
+
+    let currentY = 48; // Start from on the line
+    let velocity = 0;
+    const gravity = 0.08; // Very slow, realistic gravity
+    const targetY = 88; // Bottom position
+    const damping = 0.55; // Realistic bounce damping (loses ~45% energy each bounce)
+    let bounces = 0;
+
+    const animate = () => {
+      velocity += gravity;
+      currentY += velocity;
+
+      // Hit bottom
+      if (currentY >= targetY) {
+        currentY = targetY;
+        velocity = -velocity * damping;
+        bounces++;
+
+        // After 3 realistic bounces, start expanding
+        if (bounces >= 3 || Math.abs(velocity) < 0.2) {
+          setBallY(targetY);
+          setPhase("expanding");
+          return;
+        }
+      }
+
+      setBallY(currentY);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [phase]);
+
+  // Ball expansion from bottom - VERY SLOW and smooth
+  useEffect(() => {
+    if (phase !== "expanding") return;
+
+    let currentScale = 24; // Start from ball size
+    const maxScale = Math.max(window.innerWidth, window.innerHeight) * 3;
+
+    const animate = () => {
+      // Very slow, smooth expansion
+      const speed = 0.015; // Much slower for premium feel
+      currentScale += (maxScale - currentScale) * speed;
+      setExpandScale(currentScale);
+
+      if (currentScale >= maxScale * 0.85) {
+        setPhase("done");
+        onComplete();
+        return;
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [phase, onComplete]);
+
+  if (phase === "done") return null;
+
+  return (
+    <div 
+      className="fixed inset-0 z-[10000] overflow-hidden"
+      style={{ backgroundColor: "#000000" }}
+    >
+      {/* Counter - Bottom Left (hides when Charge Up shows) */}
+      {!showChargeText && (
+        <div
+          className="absolute z-20 transition-opacity duration-300"
+          style={{
+            bottom: "15%",
+            left: "8%",
+            opacity: phase === "expanding" || phase === "dropping" ? 0 : 1,
+          }}
+        >
+          <span
+            className="text-white/80 text-7xl md:text-9xl font-light"
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {count}
+          </span>
+        </div>
+      )}
+
+      {/* Horizontal Energy Line - Center, shrinks from right to left */}
+      {phase === "counting" && (
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+          style={{
+            width: `${lineWidth}vw`,
+            height: "2px",
+            backgroundColor: "rgba(255, 255, 255, 0.7)",
+            transition: "width 0.1s ease-out",
+          }}
+        />
+      )}
+
+      {/* Energy Ball - moves from center to bottom */}
+      {phase !== "expanding" && phase !== "done" && (
+        <div
+          className="absolute left-1/2 rounded-full"
+          style={{
+            width: "24px",
+            height: "24px",
+            top: `${ballY}%`,
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 0.5)",
+          }}
+        />
+      )}
+
+      {/* Expanding Ball from Bottom */}
+      {phase === "expanding" && (
+        <div
+          className="absolute bg-white"
+          style={{
+            width: `${expandScale}px`,
+            height: `${expandScale}px`,
+            left: "50%",
+            bottom: "0",
+            transform: "translateX(-50%)",
+            borderRadius: "50% 50% 0 0",
+          }}
+        />
+      )}
+
+      {/* Charge Up Text - Bottom Left (shows briefly during drop) */}
+      {showChargeText && phase === "dropping" && (
+        <div
+          className="absolute z-30 transition-all duration-500 ease-out"
+          style={{
+            bottom: "15%",
+            left: "8%",
+            opacity: 1,
+          }}
+        >
+          <span
+            className="text-white text-4xl md:text-6xl font-light tracking-[0.2em] uppercase"
+            style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
+            }}
+          >
+            Charge Up
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Mobile Home Page Component
 const MobileHomePage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -159,7 +359,7 @@ const MobileHomePage = () => {
 // Desktop Home Page Component
 const DesktopHomePage = () => {
   const messages = [
-    "Yo! I’m Shree Rahul :)",
+    "Yo! I'm Shree Rahul :)",
     "Oh wait! this thing on the right stole my intro :(",
     "To actually know me, hit the about section.",
   ];
@@ -312,36 +512,7 @@ const DesktopHomePage = () => {
 
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900/20 via-transparent to-gray-900/30 pointer-events-none"></div>
 
-      {showOverlays && (
-        <>
-          <div className="absolute inset-0 pointer-events-none z-5">
-            {[...Array(20)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-white/30 rounded-full animate-pulse"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${3 + Math.random() * 4}s`,
-                }}
-              />
-            ))}
-          </div>
-          <div className="absolute inset-0 opacity-5 pointer-events-none z-5">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage: `
-                linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)
-                `,
-                backgroundSize: "50px 50px",
-              }}
-            />
-          </div>
-        </>
-      )}
+
 
       <SplineMasking splineLoaded={splineLoaded} />
 
@@ -355,6 +526,8 @@ const DesktopHomePage = () => {
 // Main HomePage Component - switches between Mobile and Desktop
 const HomePage = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const [showChargeUp, setShowChargeUp] = useState(true);
+  const [animationComplete, setAnimationComplete] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -366,7 +539,33 @@ const HomePage = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  return isMobile ? <MobileHomePage /> : <DesktopHomePage />;
+  const handleChargeUpComplete = () => {
+    setShowChargeUp(false);
+    setAnimationComplete(true);
+  };
+
+  return (
+    <>
+      {showChargeUp && <ChargeUpAnimation onComplete={handleChargeUpComplete} />}
+      {animationComplete && (
+        <div
+          style={{
+            opacity: 1,
+            animation: "fadeIn 0.5s ease-out",
+          }}
+        >
+          {isMobile ? <MobileHomePage /> : <DesktopHomePage />}
+        </div>
+      )}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+    </>
+  );
 };
 
 export default HomePage;
+

@@ -1,600 +1,655 @@
-import { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github, X, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import Spline from "@splinetool/react-spline";
+import Footer from "../lib/components/footer.jsx";
 
-// Sample project data with rich information
-const projects = [
-    {
-        id: 1,
-        title: 'AI-Powered Analytics Dashboard',
-        description:
-            'A sophisticated real-time analytics platform with machine learning insights and predictive modeling capabilities. Features include custom data visualization, anomaly detection, and automated reporting.',
-        techStack: ['React', 'TypeScript', 'TensorFlow.js', 'D3.js', 'Node.js'],
-        images: [
-            'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=600&fit=crop',
-        ],
-        liveDemo: '#',
-        github: '#',
-        year: 'June 2024',
-    },
-    {
-        id: 2,
-        title: 'Blockchain DeFi Platform',
-        description:
-            'Decentralized finance application with smart contract integration, wallet management, and token swapping features. Built with security-first architecture and optimized gas efficiency.',
-        techStack: [
-            'Next.js',
-            'Web3.js',
-            'Solidity',
-            'Tailwind CSS',
-            'Ethers.js',
-        ],
-        images: [
-            'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1605792657660-596af9009e82?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=600&fit=crop',
-        ],
-        liveDemo: '#',
-        github: '#',
-        year: 'February 2024',
-    },
-    {
-        id: 3,
-        title: 'Social Media Management Suite',
-        description:
-            'Comprehensive tool for scheduling posts, analyzing engagement metrics, and managing multiple social platforms from one dashboard. Supports team collaboration and advanced analytics.',
-        techStack: ['Vue.js', 'Firebase', 'Chart.js', 'Express', 'Redis'],
-        images: [
-            'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1432888622747-4eb9a8f2c293?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1557838923-2985c318be48?w=800&h=600&fit=crop',
-        ],
-        liveDemo: '#',
-        github: '#',
-        year: 'September 2023',
-    },
-    {
-        id: 4,
-        title: 'E-Commerce AR Experience',
-        description:
-            'Revolutionary shopping platform with augmented reality features allowing customers to visualize products in their space. Includes real-time 3D rendering and spatial mapping.',
-        techStack: ['React Native', 'AR.js', 'Three.js', 'MongoDB', 'AWS'],
-        images: [
-            'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=600&fit=crop',
-            'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=800&h=600&fit=crop',
-        ],
-        liveDemo: '#',
-        github: '#',
-        year: 'April 2023',
-    },
-];
+// Custom hook for scroll animation
+const useScrollAnimation = (threshold = 0.2) => {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
-const ProjectsShowcase = () => {
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [hoveredCard, setHoveredCard] = useState(null);
-
-    // Ref for scroll-linked timeline animation
-    const timelineRef = useRef(null);
-
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
-
-    // Track scroll progress for timeline fill animation
-    const { scrollYProgress } = useScroll({
-        target: timelineRef,
-        offset: ['start center', 'end center'],
-    });
-
-    // Transform scroll progress to height percentage for timeline fill
-    const timelineHeight = useTransform(
-        scrollYProgress,
-        [0, 1],
-        ['0%', '100%']
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold }
     );
 
-    // Carousel navigation functions
-    const nextImage = () => {
-        if (selectedProject) {
-            setCurrentImageIndex((prev) =>
-                prev === selectedProject.images.length - 1 ? 0 : prev + 1
-            );
-        }
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
     };
+  }, [threshold]);
 
-    const prevImage = () => {
-        if (selectedProject) {
-            setCurrentImageIndex((prev) =>
-                prev === 0 ? selectedProject.images.length - 1 : prev - 1
-            );
-        }
-    };
-
-    const openModal = (project) => {
-        setSelectedProject(project);
-        setCurrentImageIndex(0);
-    };
-
-    const closeModal = () => {
-        setSelectedProject(null);
-        setCurrentImageIndex(0);
-    };
-
-    return (
-        <div className="min-h-screen bg-[#0a0a0a] relative overflow-hidden">
-            {/* Animated gradient background with subtle glow */}
-            <div className="absolute inset-0 opacity-40">
-                <motion.div
-                    className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-[120px]"
-                    animate={{
-                        x: [0, 100, 0],
-                        y: [0, 150, 0],
-                        scale: [1, 1.3, 1],
-                    }}
-                    transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
-                />
-                <motion.div
-                    className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-cyan-500/30 to-blue-600/30 rounded-full blur-[120px]"
-                    animate={{
-                        x: [0, -100, 0],
-                        y: [0, -150, 0],
-                        scale: [1, 1.4, 1],
-                    }}
-                    transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                    }}
-                />
-            </div>
-
-            {/* Floating particles for depth */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(30)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute w-1 h-1 bg-white/20 rounded-full"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                        }}
-                        animate={{
-                            y: [-30, -150],
-                            opacity: [0, 0.8, 0],
-                        }}
-                        transition={{
-                            duration: Math.random() * 6 + 4,
-                            repeat: Infinity,
-                            delay: Math.random() * 5,
-                            ease: 'easeOut',
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Header Section with Apple-style glassmorphism */}
-            <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1] }}
-                className="relative z-10 pt-16 pb-16 text-center"
-            >
-                <motion.div
-                    animate={{ rotate: [0, 360] }}
-                    transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: 'linear',
-                    }}
-                    className="inline-block mb-6"
-                >
-                    <Sparkles className="w-10 h-10 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
-                </motion.div>
-                <h1 className="text-6xl font-extralight text-white mb-4 tracking-tight">
-                    Featured Projects
-                </h1>
-                <p className="text-gray-400 text-xl font-light max-w-2.5xl mx-auto leading-relaxed">
-                    A curated collection of innovative solutions crafted with
-                    precision and creativity
-                </p>
-            </motion.div>
-
-            {/* Timeline Container with scroll-linked animation */}
-            <div
-                ref={timelineRef}
-                className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32"
-            >
-                {/* Background timeline line (dim/unfilled) */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-32 w-[2px] bg-white/10" />
-
-                {/* Animated timeline fill - grows with scroll progress */}
-                <motion.div
-                    className="absolute left-1/2 transform -translate-x-1/2 top-0 w-[2px] bg-gradient-to-b from-cyan-400 via-blue-500 to-blue-600 shadow-[0_0_15px_rgba(34,211,238,0.6)]"
-                    style={{ height: timelineHeight }}
-                />
-
-                {/* Project Timeline Nodes */}
-                {projects.map((project, index) => (
-                    <motion.div
-                        key={project.id}
-                        // Scroll-triggered entrance animation
-                        initial={{ opacity: 0, y: 100 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: '-100px' }}
-                        transition={{
-                            duration: 0.8,
-                            delay: index * 0.15,
-                            ease: [0.25, 0.1, 0.25, 1],
-                        }}
-                        className={`relative mb-24 ${
-                            index % 2 === 0 ? 'md:text-right' : 'md:text-left'
-                        }`}
-                    >
-                        {/* Timeline Node (circle on the line) */}
-                        <motion.div
-                            className="absolute left-1/2 -ml-[13.75px] transform -translate-x-1/2 top-1 z-20"
-                            initial={{ scale: 0 }}
-                            whileInView={{ scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{
-                                delay: index * 0.15 + 0.3,
-                                type: 'spring',
-                            }}
-                        >
-                            {/* Outer glow ring */}
-                            <motion.div
-                                className="absolute inset-0 w-7 h-7 bg-cyan-400 rounded-full opacity-40 blur-sm"
-                                animate={{ scale: [1, 1.3, 1] }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                            />
-                            {/* Main node */}
-                            <div className="relative w-7 h-7 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full border-4 border-[#0a0a0a] shadow-[0_0_20px_rgba(34,211,238,0.8)]" />
-                        </motion.div>
-
-                        {/* Year Badge above timeline node */}
-                        <motion.div
-                            className={`absolute z-30 top-0 ${
-                                index % 2 === 0
-                                    ? 'md:left-[52.75%] left-1/2 -translate-x-1/2'
-                                    : 'md:right-[52.75%] right-1/2 translate-x-1/2'
-                            }`}
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.15 + 0.4 }}
-                        >
-                            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-full px-5 py-2 text-gray-300 text-sm font-light shadow-[0_0_25px_rgba(255,255,255,0.1)]">
-                                {project.year}
-                            </div>
-                        </motion.div>
-
-                        {/* Project Card - Apple Glassmorphism Style */}
-                        <motion.div
-                            className={`inline-block w-full md:w-[47%] ${
-                                index % 2 === 0 ? 'md:mr-[53%]' : 'md:ml-[53%]'
-                            }`}
-                            // Hover animation with scale and glow
-                            whileHover={{
-                                scale: 1.03,
-                                transition: {
-                                    duration: 0.3,
-                                    ease: [0.25, 0.1, 0.25, 1],
-                                },
-                            }}
-                            onHoverStart={() => setHoveredCard(project.id)}
-                            onHoverEnd={() => setHoveredCard(null)}
-                            onClick={() => openModal(project)}
-                        >
-                            <div
-                                className={`
-                relative bg-white/10 backdrop-blur-xl border border-white/20 
-                rounded-3xl p-8 cursor-pointer group overflow-hidden
-                shadow-[0_0_25px_rgba(255,255,255,0.1)]
-                transition-all duration-300
-                ${hoveredCard === project.id ? 'border-cyan-400/60 shadow-[0_0_35px_rgba(34,211,238,0.3)]' : ''}
-              `}
-                            >
-                                {/* Animated glow sweep effect on hover */}
-                                <motion.div
-                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                                    initial={{ x: '-100%' }}
-                                    animate={{
-                                        x:
-                                            hoveredCard === project.id
-                                                ? '100%'
-                                                : '-100%',
-                                    }}
-                                    transition={{
-                                        duration: 0.6,
-                                        ease: 'easeInOut',
-                                    }}
-                                />
-
-                                {/* Corner accent glow */}
-                                <motion.div
-                                    className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-cyan-400/20 to-transparent rounded-br-3xl"
-                                    initial={{ opacity: 0 }}
-                                    animate={{
-                                        opacity:
-                                            hoveredCard === project.id ? 1 : 0,
-                                    }}
-                                    transition={{ duration: 0.3 }}
-                                />
-
-                                {/* Project preview image with glass overlay */}
-                                <div className="relative mb-6 rounded-2xl overflow-hidden h-52 bg-black/40 border border-white/10">
-                                    <img
-                                        src={project.images[0]}
-                                        alt={project.title}
-                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700 ease-out"
-                                    />
-                                    {/* Dark gradient overlay for text legibility */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                                    {/* Floating tech count badge */}
-                                    <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3 py-1 text-xs text-white font-light">
-                                        {project.techStack.length} Technologies
-                                    </div>
-                                </div>
-
-                                {/* Project title with hover color transition */}
-                                <h3 className="text-3xl font-extralight text-white mb-4 group-hover:text-cyan-400 transition-colors duration-300">
-                                    {project.title}
-                                </h3>
-
-                                {/* Project description */}
-                                <p className="text-gray-400 text-sm font-light mb-6 leading-relaxed line-clamp-3">
-                                    {project.description}
-                                </p>
-
-                                {/* Tech Stack Pills */}
-                                <div className="flex flex-wrap gap-2 mb-5">
-                                    {project.techStack
-                                        .slice(0, 4)
-                                        .map((tech, i) => (
-                                            <motion.span
-                                                key={i}
-                                                initial={{
-                                                    opacity: 0,
-                                                    scale: 0.8,
-                                                }}
-                                                whileInView={{
-                                                    opacity: 1,
-                                                    scale: 1,
-                                                }}
-                                                viewport={{ once: true }}
-                                                transition={{
-                                                    delay:
-                                                        index * 0.15 +
-                                                        0.5 +
-                                                        i * 0.05,
-                                                }}
-                                                className="bg-white/5 backdrop-blur-md border border-white/20 rounded-lg px-3 py-1.5 text-xs text-gray-300 font-light"
-                                            >
-                                                {tech}
-                                            </motion.span>
-                                        ))}
-                                    {project.techStack.length > 4 && (
-                                        <span className="bg-white/5 backdrop-blur-md border border-white/20 rounded-lg px-3 py-1.5 text-xs text-gray-300 font-light">
-                                            +{project.techStack.length - 4}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* View Details CTA */}
-                                <motion.div
-                                    className="flex items-center gap-2 text-cyan-400 text-sm font-light"
-                                    animate={{
-                                        x: hoveredCard === project.id ? 8 : 0,
-                                    }}
-                                    transition={{ duration: 0.3 }}
-                                >
-                                    <span>Explore Project</span>
-                                    <ExternalLink className="w-4 h-4" />
-                                </motion.div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                ))}
-            </div>
-
-            {/* Modal with 3D Carousel - Apple Glassmorphism */}
-            <AnimatePresence>
-                {selectedProject && (
-                    <motion.div
-                        // Backdrop fade-in animation
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-2xl"
-                        onClick={closeModal}
-                    >
-                        {/* Modal content with scale + opacity animation */}
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 50 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 50 }}
-                            transition={{
-                                type: 'spring',
-                                damping: 30,
-                                stiffness: 300,
-                                duration: 0.5,
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 sm:p-10 max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(255,255,255,0.15)]"
-                        >
-                            {/* 3D Image Carousel */}
-                            <div className="relative h-[400px] mb-8 rounded-2xl overflow-hidden bg-black/40 border border-white/20 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                                <AnimatePresence mode="wait">
-                                    <motion.img
-                                        key={currentImageIndex}
-                                        src={
-                                            selectedProject.images[
-                                                currentImageIndex
-                                            ]
-                                        }
-                                        alt={`${selectedProject.title} - ${currentImageIndex + 1}`}
-                                        // 3D carousel transition effect
-                                        initial={{
-                                            opacity: 0,
-                                            x: 300,
-                                            rotateY: 45,
-                                            scale: 0.8,
-                                        }}
-                                        animate={{
-                                            opacity: 1,
-                                            x: 0,
-                                            rotateY: 0,
-                                            scale: 1,
-                                        }}
-                                        exit={{
-                                            opacity: 0,
-                                            x: -300,
-                                            rotateY: -45,
-                                            scale: 0.8,
-                                        }}
-                                        transition={{
-                                            duration: 0.6,
-                                            ease: [0.25, 0.1, 0.25, 1],
-                                        }}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </AnimatePresence>
-
-                                {/* Carousel navigation arrows */}
-                                <motion.button
-                                    onClick={prevImage}
-                                    whileHover={{ scale: 1.1, x: -5 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                                >
-                                    <ChevronLeft className="w-7 h-7 text-white" />
-                                </motion.button>
-                                <motion.button
-                                    onClick={nextImage}
-                                    whileHover={{ scale: 1.1, x: 5 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                                >
-                                    <ChevronRight className="w-7 h-7 text-white" />
-                                </motion.button>
-
-                                {/* Image position indicators */}
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                                    {selectedProject.images.map((_, i) => (
-                                        <motion.button
-                                            key={i}
-                                            onClick={() =>
-                                                setCurrentImageIndex(i)
-                                            }
-                                            whileHover={{ scale: 1.2 }}
-                                            className={`h-2 rounded-full transition-all ${
-                                                i === currentImageIndex
-                                                    ? 'bg-cyan-400 w-10 shadow-[0_0_10px_rgba(34,211,238,0.8)]'
-                                                    : 'bg-white/30 hover:bg-white/50 w-2'
-                                            }`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Project detailed information */}
-                            <motion.h2
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.2 }}
-                                className="text-5xl font-extralight text-white mb-5"
-                            >
-                                {selectedProject.title}
-                            </motion.h2>
-
-                            <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="text-gray-300 text-lg font-light mb-8 leading-relaxed"
-                            >
-                                {selectedProject.description}
-                            </motion.p>
-
-                            {/* Full tech stack display */}
-                            <div className="mb-10">
-                                <h3 className="text-sm text-gray-400 font-light mb-4 uppercase tracking-widest">
-                                    Technologies Used
-                                </h3>
-                                <div className="flex flex-wrap gap-3">
-                                    {selectedProject.techStack.map(
-                                        (tech, i) => (
-                                            <motion.span
-                                                key={i}
-                                                initial={{
-                                                    opacity: 0,
-                                                    scale: 0.8,
-                                                    y: 20,
-                                                }}
-                                                animate={{
-                                                    opacity: 1,
-                                                    scale: 1,
-                                                    y: 0,
-                                                }}
-                                                transition={{
-                                                    delay: 0.4 + i * 0.05,
-                                                }}
-                                                whileHover={{
-                                                    scale: 1.05,
-                                                    y: -2,
-                                                }}
-                                                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-5 py-2.5 text-sm text-white font-light shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-                                            >
-                                                {tech}
-                                            </motion.span>
-                                        )
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Action buttons with glass effect */}
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <motion.a
-                                    href={selectedProject.liveDemo}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.5 }}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl px-6 py-4 flex items-center justify-center gap-3 font-light transition-all shadow-[0_0_30px_rgba(34,211,238,0.4)]"
-                                >
-                                    <ExternalLink className="w-5 h-5" />
-                                    <span>View Live Demo</span>
-                                </motion.a>
-                                <motion.a
-                                    href={selectedProject.github}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.6 }}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="flex-1 bg-white/10 hover:bg-white/15 backdrop-blur-xl border border-white/20 text-white rounded-xl px-6 py-4 flex items-center justify-center gap-3 font-light transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                                >
-                                    <Github className="w-5 h-5" />
-                                    <span>View Source Code</span>
-                                </motion.a>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
+  return [ref, isVisible];
 };
 
-export default ProjectsShowcase;
+// Status Badge Component with pulse animation
+const StatusBadge = ({ status }) => {
+  const statusConfig = {
+    shipped: {
+      text: "shipped",
+      bg: "rgba(34, 197, 94, 0.15)",
+      border: "rgba(34, 197, 94, 0.3)",
+      color: "rgb(134, 239, 172)",
+      glow: "rgba(34, 197, 94, 0.4)",
+    },
+    "in progress": {
+      text: "in progress",
+      bg: "rgba(59, 130, 246, 0.15)",
+      border: "rgba(59, 130, 246, 0.3)",
+      color: "rgb(147, 197, 253)",
+      glow: "rgba(59, 130, 246, 0.4)",
+    },
+    paused: {
+      text: "paused (thinking)",
+      bg: "rgba(251, 191, 36, 0.15)",
+      border: "rgba(251, 191, 36, 0.3)",
+      color: "rgb(253, 224, 71)",
+      glow: "rgba(251, 191, 36, 0.4)",
+    },
+  };
+
+  const config = statusConfig[status] || statusConfig.shipped;
+
+  return (
+    <span
+      className="inline-block px-3 py-1 rounded-full text-xs font-medium animate-pulse-once"
+      style={{
+        background: config.bg,
+        border: `1px solid ${config.border}`,
+        color: config.color,
+        boxShadow: status === "in progress" ? `0 0 12px ${config.glow}` : "none",
+        animation: status === "in progress" ? "breathe 3s ease-in-out infinite" : "none",
+      }}
+    >
+      {config.text}
+    </span>
+  );
+};
+
+// Tech Tag Chip
+const TechChip = ({ tech }) => (
+  <span
+    className="px-2 py-0.5 rounded-md text-xs"
+    style={{
+      background: "rgba(255, 255, 255, 0.08)",
+      border: "1px solid rgba(255, 255, 255, 0.1)",
+      color: "rgba(255, 255, 255, 0.6)",
+    }}
+  >
+    {tech}
+  </span>
+);
+
+// Reality Check Badge
+const RealityBadge = ({ type }) => {
+  const badges = {
+    "harder than expected": "🔥",
+    "worth it": "✨",
+    "would rebuild again": "🔁",
+  };
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs"
+      style={{
+        background: "rgba(255, 255, 255, 0.05)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        color: "rgba(255, 255, 255, 0.7)",
+      }}
+    >
+      <span>{badges[type] || "💭"}</span>
+      <span>{type}</span>
+    </span>
+  );
+};
+
+// Experiment Card Component
+const ExperimentCard = ({ project, index, isVisible, onOpen }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className={`relative rounded-2xl cursor-pointer overflow-hidden transition-all duration-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+      style={{
+        background: "rgba(20, 20, 20, 0.7)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: isHovered
+          ? "0 25px 60px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
+          : "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+        transform: isHovered ? "translateY(-8px)" : "translateY(0)",
+        transitionDelay: `${index * 100}ms`,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={onOpen}
+    >
+      {/* Top shine line */}
+      <div
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{
+          background: isHovered
+            ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)"
+            : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+        }}
+      />
+
+      {/* Glow effect */}
+      <div
+        className="absolute -inset-1 rounded-2xl blur-xl transition-all duration-500 pointer-events-none"
+        style={{
+          background: "rgba(255, 255, 255, 0.08)",
+          opacity: isHovered ? 0.5 : 0,
+        }}
+      />
+
+      <div className="relative z-10 p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <span className="text-xs text-gray-500 font-mono tracking-wide">
+            {project.id}
+          </span>
+          <StatusBadge status={project.status} />
+        </div>
+
+        {/* Project Name */}
+        <h3 className="text-xl font-semibold text-white mb-3">{project.name}</h3>
+
+        {/* Hypothesis / Result Flip */}
+        <div className="mb-4 min-h-[48px]">
+          <p
+            className="text-sm text-gray-400 leading-relaxed transition-all duration-500"
+            style={{
+              opacity: isHovered ? 0 : 1,
+              transform: isHovered ? "translateY(-8px)" : "translateY(0)",
+              position: isHovered ? "absolute" : "relative",
+            }}
+          >
+            <span className="text-gray-500 text-xs">hypothesis:</span> {project.hypothesis}
+          </p>
+          <p
+            className="text-sm text-gray-300 leading-relaxed transition-all duration-500"
+            style={{
+              opacity: isHovered ? 1 : 0,
+              transform: isHovered ? "translateY(0)" : "translateY(8px)",
+            }}
+          >
+            <span className="text-gray-500 text-xs">result:</span> {project.result}
+          </p>
+        </div>
+
+        {/* Tech Tags */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.techPreview.map((tech, idx) => (
+            <TechChip key={idx} tech={tech} />
+          ))}
+        </div>
+
+        {/* Hover CTA */}
+        <div
+          className="text-center transition-all duration-300"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            transform: isHovered ? "translateY(0)" : "translateY(8px)",
+          }}
+        >
+          <span className="text-xs text-gray-500 italic">click to open the dossier</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Dossier Modal Component
+const DossierModal = ({ project, onClose }) => {
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    setIsAnimating(true);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
+  if (!project) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 transition-all duration-500"
+        style={{
+          background: "rgba(0, 0, 0, 0.85)",
+          backdropFilter: "blur(12px)",
+          opacity: isAnimating ? 1 : 0,
+        }}
+      />
+
+      {/* Modal Content */}
+      <div
+        className="relative w-full max-w-3xl max-h-[85vh] overflow-y-auto rounded-3xl transition-all duration-500"
+        style={{
+          background: "rgba(20, 20, 20, 0.95)",
+          backdropFilter: "blur(40px)",
+          WebkitBackdropFilter: "blur(40px)",
+          border: "1px solid rgba(255, 255, 255, 0.15)",
+          boxShadow: "0 40px 100px rgba(0, 0, 0, 0.6)",
+          opacity: isAnimating ? 1 : 0,
+          transform: isAnimating ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top shine line */}
+        <div
+          className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-3xl"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
+          }}
+        />
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 rounded-full transition-all duration-300 hover:bg-white/10 z-10"
+        >
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="p-8 md:p-10">
+          {/* Header */}
+          <div className="mb-8">
+            <span className="text-xs text-gray-500 font-mono tracking-wide">{project.id}</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-4">{project.name}</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <StatusBadge status={project.status} />
+              {project.role && (
+                <span className="text-xs text-gray-500">{project.role}</span>
+              )}
+              {project.timeSpent && (
+                <span className="text-xs text-gray-500">• {project.timeSpent}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Dossier Sections */}
+          <div className="space-y-6">
+            {/* The Problem */}
+            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+                <span>🧩</span> The Problem
+              </h4>
+              <p className="text-gray-300 leading-relaxed">{project.problem}</p>
+            </div>
+
+            {/* The Idea */}
+            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+                <span>💡</span> The Idea
+              </h4>
+              <p className="text-gray-300 leading-relaxed">{project.idea}</p>
+            </div>
+
+            {/* The Mess */}
+            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+                <span>😵</span> The Mess
+              </h4>
+              <p className="text-gray-300 leading-relaxed">{project.mess}</p>
+            </div>
+
+            {/* The Fix */}
+            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+                <span>🛠</span> The Fix
+              </h4>
+              <p className="text-gray-300 leading-relaxed">{project.fix}</p>
+            </div>
+
+            {/* The Outcome */}
+            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
+              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+                <span>🚀</span> The Outcome
+              </h4>
+              <p className="text-gray-300 leading-relaxed">{project.outcome}</p>
+            </div>
+          </div>
+
+          {/* Tech Stack & Details */}
+          <div className="mt-8 pt-6" style={{ borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <span className="text-xs text-gray-500">Tech Stack:</span>
+              {project.techStack.map((tech, idx) => (
+                <TechChip key={idx} tech={tech} />
+              ))}
+            </div>
+
+            {/* Reality Check */}
+            {project.realityCheck && (
+              <div className="flex flex-wrap gap-2">
+                {project.realityCheck.map((check, idx) => (
+                  <RealityBadge key={idx} type={check} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Links */}
+          {(project.liveUrl || project.repoUrl) && (
+            <div className="mt-6 flex gap-4">
+              {project.liveUrl && (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px solid rgba(255, 255, 255, 0.15)",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  View Live →
+                </a>
+              )}
+              {project.repoUrl && (
+                <a
+                  href={project.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    color: "rgba(255, 255, 255, 0.7)",
+                  }}
+                >
+                  View Code →
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes breathe {
+          0%, 100% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
+          50% { box-shadow: 0 0 16px rgba(59, 130, 246, 0.5); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Main Projects Page
+export default function ProjectPage() {
+  const [splineLoaded, setSplineLoaded] = useState(false);
+  const [splineError, setSplineError] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const [heroRef, heroVisible] = useScrollAnimation(0.2);
+  const [projectsRef, projectsVisible] = useScrollAnimation(0.1);
+
+  // Sample Projects Data
+  const projects = [
+    {
+      id: "experiment_01",
+      name: "Portfolio Website",
+      status: "shipped",
+      hypothesis: "a portfolio should feel alive, not like a resume PDF.",
+      result: "built something I'm actually proud to share.",
+      techPreview: ["React", "Spline", "Tailwind"],
+      techStack: ["React", "Spline 3D", "Tailwind CSS", "Framer Motion"],
+      role: "solo",
+      timeSpent: "~3 weeks",
+      problem: "traditional portfolios feel static and forgettable.",
+      idea: "create an immersive, interactive experience with 3D elements and micro-animations.",
+      mess: "spline performance issues, animation timing nightmares, glassmorphism inconsistencies.",
+      fix: "lazy loading for 3D, refined animation curves, created a consistent design system.",
+      outcome: "a portfolio that actually represents my design sensibilities. still iterating.",
+      realityCheck: ["harder than expected", "worth it"],
+      liveUrl: "#",
+      repoUrl: "https://github.com",
+    },
+    {
+      id: "experiment_02",
+      name: "AI Study Assistant",
+      status: "in progress",
+      hypothesis: "AI can make studying less painful and more personalized.",
+      result: "early signs of promise. needs more data.",
+      techPreview: ["Python", "OpenAI", "React"],
+      techStack: ["Python", "FastAPI", "OpenAI API", "React", "PostgreSQL"],
+      role: "solo",
+      timeSpent: "~2 weeks (ongoing)",
+      problem: "generic study tools don't adapt to how individuals learn.",
+      idea: "build an AI tutor that learns your weak spots and adjusts accordingly.",
+      mess: "prompt engineering is an art. token limits. response consistency.",
+      fix: "fine-tuned prompts, added conversation memory, built feedback loops.",
+      outcome: "working prototype. needs user testing and refinement.",
+      realityCheck: ["harder than expected", "would rebuild again"],
+    },
+    {
+      id: "experiment_03",
+      name: "Expense Tracker",
+      status: "shipped",
+      hypothesis: "tracking money shouldn't require a finance degree.",
+      result: "simple beats complex. people actually use it.",
+      techPreview: ["React", "Node.js", "MongoDB"],
+      techStack: ["React", "Node.js", "Express", "MongoDB", "Chart.js"],
+      role: "solo",
+      timeSpent: "~2 weeks",
+      problem: "most expense apps are bloated with features nobody asked for.",
+      idea: "build the simplest possible tracker that still provides insights.",
+      mess: "date handling across timezones. chart rendering performance.",
+      fix: "moment.js for dates, virtualized lists, lazy chart loading.",
+      outcome: "clean, fast, and actually useful. friends use it daily.",
+      realityCheck: ["worth it"],
+      repoUrl: "https://github.com",
+    },
+    {
+      id: "experiment_04",
+      name: "Real-time Chat App",
+      status: "shipped",
+      hypothesis: "websockets are overkill for simple chat apps.",
+      result: "they're not. real-time is real-time.",
+      techPreview: ["Socket.io", "React", "Node.js"],
+      techStack: ["React", "Node.js", "Socket.io", "Redis", "MongoDB"],
+      role: "solo",
+      timeSpent: "~2 weeks",
+      problem: "wanted to understand real-time communication at a deep level.",
+      idea: "build a chat app from scratch without any abstractions.",
+      mess: "connection state management. handling disconnects gracefully.",
+      fix: "heartbeat mechanism, reconnection logic, optimistic UI updates.",
+      outcome: "solid understanding of websockets. app works smoothly.",
+      realityCheck: ["harder than expected", "worth it", "would rebuild again"],
+      repoUrl: "https://github.com",
+    },
+    {
+      id: "experiment_05",
+      name: "Weather Dashboard",
+      status: "paused",
+      hypothesis: "weather apps can be beautiful AND useful.",
+      result: "design is done. API integration pending.",
+      techPreview: ["React", "D3.js", "APIs"],
+      techStack: ["React", "D3.js", "OpenWeather API", "Tailwind CSS"],
+      role: "solo",
+      timeSpent: "~1 week",
+      problem: "most weather apps prioritize data over experience.",
+      idea: "visualize weather in a way that feels intuitive and beautiful.",
+      mess: "API rate limits. D3 learning curve. responsive chart scaling.",
+      fix: "caching strategy, simplified visualizations, mobile-first approach.",
+      outcome: "paused to focus on other priorities. will revisit.",
+      realityCheck: ["harder than expected"],
+    },
+    {
+      id: "experiment_06",
+      name: "URL Shortener",
+      status: "shipped",
+      hypothesis: "a weekend project to learn about systems design.",
+      result: "learned about databases, caching, and analytics.",
+      techPreview: ["Node.js", "Redis", "MongoDB"],
+      techStack: ["Node.js", "Express", "Redis", "MongoDB", "Analytics"],
+      role: "solo",
+      timeSpent: "~3 days",
+      problem: "wanted a practical project to understand URL shortening at scale.",
+      idea: "build a shortener with analytics and custom slugs.",
+      mess: "collision handling for short codes. analytics without slowing down redirects.",
+      fix: "base62 encoding, async analytics logging, redis for hot paths.",
+      outcome: "simple but taught me a lot about system design trade-offs.",
+      realityCheck: ["worth it"],
+      repoUrl: "https://github.com",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Spline Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {!splineError ? (
+          <Spline
+            scene="https://prod.spline.design/pX-RxNY-kD9Fb7ce/scene.splinecode"
+            onLoad={() => setSplineLoaded(true)}
+            onError={() => setSplineError(true)}
+          />
+        ) : (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Dark Overlay */}
+      <div
+        className="fixed inset-0 z-1 pointer-events-none"
+        style={{ background: "rgba(0, 0, 0, 0.4)" }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section
+          ref={heroRef}
+          className="min-h-[50vh] flex items-center justify-center px-6 md:px-12 lg:px-24 pt-28 pb-12"
+        >
+          <div className="text-center max-w-4xl">
+            <div
+              className={`inline-block mb-6 px-6 py-2 rounded-full text-sm font-medium relative overflow-hidden transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+              style={{
+                background: "rgba(255, 255, 255, 0.08)",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                boxShadow: "0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                color: "#E5E7EB",
+              }}
+            >
+              <div
+                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
+                style={{
+                  background: "linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)",
+                }}
+              />
+              <span className="relative z-10">experiments with side effects</span>
+            </div>
+
+            <h1
+              className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
+              style={{ transitionDelay: "200ms" }}
+            >
+              Experiments Lab
+            </h1>
+
+            <p
+              className={`text-xl md:text-2xl text-gray-400 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+              style={{ transitionDelay: "400ms" }}
+            >
+              ideas that escaped my head and demanded to be built.
+            </p>
+          </div>
+        </section>
+
+        {/* Projects Grid */}
+        <section ref={projectsRef} className="px-6 md:px-12 lg:px-24 py-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project, index) => (
+                <ExperimentCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  isVisible={projectsVisible}
+                  onOpen={() => setSelectedProject(project)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Ending Line */}
+        <div className="text-center py-20 px-6">
+          <p className="text-gray-500 text-lg">
+            more experiments planned. curiosity undefeated.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <Footer />
+      </div>
+
+      {/* Dossier Modal */}
+      {selectedProject && (
+        <DossierModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
+
+      {/* Loading Screen */}
+      {!splineLoaded && (
+        <div
+          className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
+          style={{ backgroundColor: "rgba(34, 34, 34, 0.5)" }}
+        >
+          <div
+            className="flex flex-col items-center p-8 rounded-3xl backdrop-blur-xl"
+            style={{
+              backgroundColor: "rgba(248, 248, 248, 0.025)",
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderColor: "rgba(248, 248, 248, 0.2)",
+            }}
+          >
+            <div
+              className="w-16 h-16 border-2 rounded-full animate-spin mb-6"
+              style={{
+                borderColor: "rgba(248, 248, 248, 0.2)",
+                borderTopColor: "rgba(248, 248, 248, 0.8)",
+              }}
+            />
+            <p className="text-white/80 text-lg font-medium">Loading experiments...</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
