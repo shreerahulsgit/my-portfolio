@@ -364,39 +364,51 @@ const ExperienceSection = () => {
 
   const experiences = [
     {
-      role: "Frontend Developer Intern",
-      organization: "Tech Startup XYZ",
-      duration: "Jun 2023 - Aug 2023",
-      description: "Built UI components while questioning my life choices. Learned that 'quick fix' is a myth. Consumed unhealthy amounts of coffee.",
-      techStack: ["React", "TypeScript", "Tailwind CSS", "Git"],
-      xp: {
-        learning: 7,
-        stress: 8,
-        satisfaction: 6,
-      },
-    },
-    {
-      role: "Web Development Lead",
-      organization: "College Tech Club",
-      duration: "Jan 2023 - Present",
-      description: "Herded cats (aka junior devs). Debugged code at 3 AM. Pretended to know what I was doing. Somehow it worked.",
-      techStack: ["Next.js", "Node.js", "MongoDB", "AWS"],
+      role: "Web Development Intern",
+      organization: "CIT Chennai",
+      duration: "Nov 2025 - Dec 2025",
+      description: "Built a full-on college web app with a squad of 4 (group project but make it real). Handled features like attendance, seating arrangements, lab occupancy, and timetable generation — basically turned college chaos into one sol.",
+      techStack: ["React", "JavaScript", "Python: Fast API", "MySQL", "Git"],
       xp: {
         learning: 8,
-        stress: 6,
+        stress: 10,
         satisfaction: 8,
       },
     },
     {
-      role: "Freelance Developer",
-      organization: "Self-Employed",
-      duration: "2022 - Present",
-      description: "Client: 'Make the logo bigger.' Me: *cries in CSS*. Built cool stuff for humans with varying levels of tech understanding.",
+      role: "Research Intern",
+      organization: "CIT Chennai",
+      duration: "Apr 2025 – May 2025",
+      description: "Entered my big-brain era.Reviewed energy-efficient cloud computing methods — VM migration, energy-aware scheduling, forecasting models, and renewable energy integration (saving clouds AND the planet fr ).Explored a Kubernetes-based Multi-Objective Reinforcement Learning framework to optimize cost and SLA across AWS, Azure, and GCP.Yes, it was complex. Yes, I survived.",
       techStack: ["React", "Express.js", "MySQL", "Firebase"],
       xp: {
-        learning: 9,
-        stress: 7,
+        learning: 6,
+        stress: 8,
         satisfaction: 7,
+      },
+    },
+       {
+  role: "UI/UX & Frontend Intern",
+  organization: "Altruisty",
+  duration: "Nov 2024 – Jan 2025",
+  description: "Completed a 2-month internship with a strong focus on UI/UX design within frontend development. Crafted clean, user-friendly interfaces while understanding how frontend decisions connect with backend logic (designing responsibly fr).",
+  techStack: ["Figma", "HTML", "CSS", "JavaScript"],
+  xp: {
+    learning: 9,
+    stress: 5,
+    satisfaction: 9,
+  },
+},
+    {
+      role: "Web Development Intern",
+      organization: "Smart Qart",
+      duration: "Nov 2024 – Dec 2024",
+      description: "Got hands-on with the real e-commerce dev grind.Worked closely with actual devs (yes, professionals ) and learned how production code doesn’t forgive mistakes.",
+      techStack: ["React", "Node.js", "MongoDB", "AWS"],
+      xp: {
+        learning: 9,
+        stress: 6,
+        satisfaction: 8,
       },
     },
   ];
@@ -579,15 +591,15 @@ const ExperienceSection = () => {
                       {/* XP Meters */}
                       <div className="space-y-2 font-mono text-sm">
                         <div className="flex items-center gap-3">
-                          <span className="w-32 text-gray-400">🧠 Learning:</span>
+                          <span className="w-32 text-gray-400"> Learning:</span>
                           <span className="text-green-400">{renderXPMeter(exp.xp.learning)}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="w-32 text-gray-400">😵 Stress:</span>
+                          <span className="w-32 text-gray-400"> Stress:</span>
                           <span className="text-red-400">{renderXPMeter(exp.xp.stress)}</span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="w-32 text-gray-400">😌 Satisfaction:</span>
+                          <span className="w-32 text-gray-400"> Satisfaction:</span>
                           <span className="text-blue-400">{renderXPMeter(exp.xp.satisfaction)}</span>
                         </div>
                       </div>
@@ -616,11 +628,11 @@ const SkillsSection = () => {
 
   const skills = [
     { name: "JavaScript", icon: SiJavascript, color: "#F7DF1E" },
-    { name: "MySQL", icon: SiMysql, color: "#4479A1" },
     { name: "React", icon: SiReact, color: "#61DAFB" },
-    { name: "MongoDB", icon: SiMongodb, color: "#47A248" },
     { name: "Node.js", icon: SiNodedotjs, color: "#339933" },
     { name: "Express.js", icon: SiExpress, color: "#FFFFFF" },
+    { name: "MongoDB", icon: SiMongodb, color: "#47A248" },
+    { name: "MySQL", icon: SiMysql, color: "#4479A1" },
     { name: "AWS", icon: SiAmazonwebservices, color: "#FF9900" },
     { name: "GitHub", icon: SiGithub, color: "#FFFFFF" },
   ];
@@ -691,21 +703,22 @@ const FeaturedProjects = () => {
 
   const projects = [
     {
-      label: "Featured Project",
-      title: "E-Commerce Platform",
-      description:
-        "A full-stack e-commerce solution with real-time inventory management, secure payment processing, and advanced analytics dashboard.",
-      image:
-        "https://images.unsplash.com/photo-1557821552-17105176677c?w=800&h=600&fit=crop",
-    },
+  label: "Featured Project",
+  title: "Campus-Connect",
+  description:
+    "A centralized web application built to simplify college operations. Features include digital attendance tracking, automated exam seating arrangements, real-time lab occupancy monitoring, and timetable generation — reducing manual work and peak-hour chaos for students and faculty.",
+  image:
+    "",
+},
     {
-      label: "Featured Project",
-      title: "Social Media Dashboard",
-      description:
-        "Comprehensive analytics platform integrating multiple social media APIs with real-time data visualization and automated reporting.",
-      image:
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
-    },
+  label: "Featured Project",
+  title: "Farm Sync",
+  description:
+    "A smart agriculture web application designed to help farmers make better decisions using real-time data. Features include crop insights, weather-aware guidance, and live commodity price updates to support smarter selling and planning — tech but make it farmer-friendly.",
+  image:
+    "",
+},
+
   ];
 
   return (

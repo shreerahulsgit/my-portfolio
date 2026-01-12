@@ -115,7 +115,6 @@ const RealityBadge = ({ type }) => {
 // Experiment Card Component
 const ExperimentCard = ({ project, index, isVisible, onOpen }) => {
   const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div
       className={`relative rounded-2xl cursor-pointer overflow-hidden transition-all duration-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
@@ -292,7 +291,7 @@ const DossierModal = ({ project, onClose }) => {
             {/* The Problem */}
             <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
               <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                <span>🧩</span> The Problem
+                <span>✯</span> The Problem
               </h4>
               <p className="text-gray-300 leading-relaxed">{project.problem}</p>
             </div>
@@ -300,7 +299,7 @@ const DossierModal = ({ project, onClose }) => {
             {/* The Idea */}
             <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
               <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                <span>💡</span> The Idea
+                <span>✯</span> The Idea
               </h4>
               <p className="text-gray-300 leading-relaxed">{project.idea}</p>
             </div>
@@ -308,7 +307,7 @@ const DossierModal = ({ project, onClose }) => {
             {/* The Mess */}
             <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
               <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                <span>😵</span> The Mess
+                <span>✯</span> The Mess
               </h4>
               <p className="text-gray-300 leading-relaxed">{project.mess}</p>
             </div>
@@ -316,7 +315,7 @@ const DossierModal = ({ project, onClose }) => {
             {/* The Fix */}
             <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
               <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                <span>🛠</span> The Fix
+                <span>✯</span> The Fix
               </h4>
               <p className="text-gray-300 leading-relaxed">{project.fix}</p>
             </div>
@@ -324,7 +323,7 @@ const DossierModal = ({ project, onClose }) => {
             {/* The Outcome */}
             <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
               <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
-                <span>🚀</span> The Outcome
+                <span>✯</span> The Outcome
               </h4>
               <p className="text-gray-300 leading-relaxed">{project.outcome}</p>
             </div>

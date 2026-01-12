@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import LoadingOverlay from '../../lib/components/loading-overlay.jsx';
 import SplineMasking from '../../lib/components/spline-masking.jsx';
 import Spline from '@splinetool/react-spline';
@@ -8,9 +8,10 @@ import Spline from '@splinetool/react-spline';
 const BeyondMain = () => {
     const navigate = useNavigate();
     const [isVisible, setIsVisible] = useState(false);
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const [isAnimating, setIsAnimating] = useState(false)
-    const [suppressNext, setSuppressNext] = useState(false)
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [exitingIndex, setExitingIndex] = useState(null);
+    const [passedCards, setPassedCards] = useState([]); // Track cards that have been passed
     const [splineLoaded, setSplineLoaded] = useState(false);
 
     useEffect(() => {
@@ -51,279 +52,329 @@ const BeyondMain = () => {
     ];
 
     const totalCards = cards.length;
-    const cardWidth = 275;
-    const gap = 28;
+    const cardSize = 420; // Bigger square card size
 
-    const scrollToSlide = (index) => {
-        setCurrentSlide(index);
+    // Calculate card position based on its relationship to current index
+    // Each card stays on its designated side (even index = right, odd index = left)
+    const getCardStyle = (cardIndex) => {
+        const isPassed = passedCards.includes(cardIndex);
+        const isCurrent = cardIndex === currentIndex;
+        const isExiting = cardIndex === exitingIndex;
+        
+        // Card's fixed side based on its index (doesn't change during transitions)
+        const isOnRight = cardIndex % 2 === 0;
+        
+        // Exiting card - animate out on its designated side
+        if (isExiting) {
+            return {
+                transform: 'translateZ(300px) scale(1.2)',
+                opacity: 0,
+                zIndex: 60,
+                ...(isOnRight 
+                    ? { right: '-5%', left: 'auto' }
+                    : { left: '-5%', right: 'auto' }
+                ),
+                filter: 'none',
+                pointerEvents: 'none',
+            };
+        }
+        
+        // Passed cards - hidden off-screen on their designated side
+        if (isPassed) {
+            return {
+                transform: 'translateZ(200px) scale(0.8)',
+                opacity: 0,
+                zIndex: 0,
+                ...(isOnRight 
+                    ? { right: '-50%', left: 'auto' }
+                    : { left: '-50%', right: 'auto' }
+                ),
+                filter: 'blur(10px)',
+                pointerEvents: 'none',
+            };
+        }
+        
+        // Current front card - on its designated side
+        if (isCurrent) {
+            return {
+                transform: 'translateZ(0) scale(1)',
+                opacity: 1,
+                zIndex: 50,
+                ...(isOnRight 
+                    ? { right: '8%', left: 'auto' }
+                    : { left: '8%', right: 'auto' }
+                ),
+                filter: 'none',
+                pointerEvents: 'auto',
+            };
+        }
+        
+        // Back cards - calculate depth level based on distance from current
+        const depthLevel = cardIndex - currentIndex;
+        
+        if (depthLevel < 0) {
+            // Cards before current (should be passed, but just in case)
+            return {
+                transform: 'translateZ(-500px) scale(0.3)',
+                opacity: 0,
+                zIndex: 0,
+                ...(isOnRight 
+                    ? { right: '50%', left: 'auto' }
+                    : { left: '50%', right: 'auto' }
+                ),
+                filter: 'blur(5px)',
+                pointerEvents: 'none',
+            };
+        }
+        
+        // Back cards in the stack - stay on their designated side
+        const baseZ = -200 * depthLevel;
+        const baseScale = 1 - depthLevel * 0.1;
+        const baseOpacity = 0.8 - depthLevel * 0.12;
+        
+        return {
+            transform: `translateZ(${baseZ}px) scale(${Math.max(baseScale, 0.5)})`,
+            opacity: Math.max(baseOpacity, 0.2),
+            zIndex: 40 - depthLevel,
+            ...(isOnRight 
+                ? { right: '8%', left: 'auto' }
+                : { left: '8%', right: 'auto' }
+            ),
+            filter: `blur(${depthLevel * 0.5}px)`,
+            pointerEvents: depthLevel <= 3 ? 'auto' : 'none',
+        };
     };
 
-    const handlePrev = () => {
-        const newSlide = currentSlide > 0 ? currentSlide - 1 : totalCards - 1;
-        scrollToSlide(newSlide);
-    };
 
-    const handleNext = () => {
-        if (isAnimating) return
-
-        // arrow always implies moving to +1
-        setSuppressNext(true)
-        setIsAnimating(true)
-
-        const newSlide =
-            currentSlide < totalCards - 1 ? currentSlide + 1 : 0
-
-        scrollToSlide(newSlide)
-
+    // Navigate to previous card (travel backward - bring back the last passed card)
+    const goToPrev = () => {
+        if (isAnimating) return;
+        if (passedCards.length === 0) return; // No cards to go back to
+        
+        setIsAnimating(true);
+        
+        // Get the last passed card and bring it back
+        const lastPassedCard = passedCards[passedCards.length - 1];
+        
+        // Update state - CSS handles the smooth animation
+        setPassedCards(prev => prev.slice(0, -1));
+        setCurrentIndex(lastPassedCard);
+        
+        // Wait for CSS transition to complete
         setTimeout(() => {
-            setIsAnimating(false)
-            setSuppressNext(false)
-        }, 200)
-    }
-
-    const handleCardClick = (link) => {
-        navigate(link);
+            setIsAnimating(false);
+        }, 1800);
     };
 
-    const progressPercentage = ((currentSlide + 1) / totalCards) * 100;
+    // Navigate to next card (journey forward)
+    const goToNext = () => {
+        if (isAnimating) return;
+        if (currentIndex >= totalCards - 1) return; // No more cards to travel to
+        
+        const nextIndex = currentIndex + 1;
+        travelToNext(nextIndex);
+    };
+
+    // Travel to the next card - current card vanishes
+    const travelToNext = (nextIndex) => {
+        if (isAnimating) return;
+
+        setIsAnimating(true);
+        setExitingIndex(currentIndex);
+
+        // Update state - CSS handles smooth animation
+        setPassedCards(prev => [...prev, currentIndex]);
+        setCurrentIndex(nextIndex);
+        
+        // Clear exiting state after animation completes
+        setTimeout(() => {
+            setExitingIndex(null);
+            setIsAnimating(false);
+        }, 1800);
+    };
+
+    // Handle clicking the front card - navigate to its page
+    const handleFrontCardClick = () => {
+        navigate(cards[currentIndex].link);
+    };
+
+    // Handle clicking a back card - travel to it
+    const handleBackCardClick = (clickedIndex) => {
+        if (isAnimating || clickedIndex <= currentIndex) return;
+        if (passedCards.includes(clickedIndex)) return;
+        travelToNext(clickedIndex);
+    };
+
+    const isLastCard = currentIndex === totalCards - 1;
+    const isFirstCard = passedCards.length === 0;
 
     return (
-        <div className="h-screen text-white overflow-hidden relative flex items-center">
+        <div className="h-screen text-white overflow-hidden relative" style={{ perspective: '1400px' }}>
+            {/* Spline Background */}
             <div className="absolute inset-0">
                 <Spline
                     scene="https://prod.spline.design/aBrOEZccG5o-XuUp/scene.splinecode"
                     className="w-full h-full"
                     onLoad={() => setSplineLoaded(true)}
                 />
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            <div className="relative z-10 w-full h-full flex">
-                <div className="w-1/2 flex flex-col justify-center px-12 lg:px-16">
-                    <div
-                        className={`transition-all duration-1000 ${
-                            isVisible
-                                ? 'opacity-100 translate-y-0'
-                                : 'opacity-0 translate-y-12'
-                        }`}
-                    >
-                        <div className="mb-6">
-                            <div className="inline-block px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                                <p className="text-sm text-white/70 tracking-wider">
-                                    BEYOND THE PORTFOLIO
-                                </p>
-                            </div>
-                        </div>
-
-                        <h1 className="text-5xl lg:text-6xl font-black mb-6 leading-none">
-                            <span className="block text-white">
-                                LET'S EXPLORE
-                            </span>
-                            <span className="block text-white">
-                                BEYOND TECH
-                            </span>
-                        </h1>
-
-                        <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
-                            The things that inspire me beyond coding — stories,
-                            sounds, sports, and moments that fuel creativity.
-                        </p>
-
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => navigate('/')}
-                                className="px-8 py-4 bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 rounded-full font-semibold transition-all duration-300 flex items-center gap-2 hover:scale-105"
-                            >
-                                <ChevronLeft className="w-5 h-5" />
-                                Back
-                            </button>
-                            <button
-                                onClick={() => navigate('/beyond/books')}
-                                className="group px-8 py-4 bg-white hover:bg-gray-200 text-black rounded-full font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg hover:scale-105"
-                            >
-                                <Sparkles className="w-5 h-5" />
-                                Dive In
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="w-1/2 flex items-center relative">
-                    <div
-                        className={`w-full transition-all duration-1000 delay-300 ${
-                            isVisible
-                                ? 'opacity-100 translate-x-0'
-                                : 'opacity-0 translate-x-12'
-                        }`}
-                    >
-                        <div
-                            className="relative flex items-center justify-center h-full"
-                            style={{
-                                width: `${cardWidth * 3 + gap * 2}px`,
-                                height: '500px',
-                                margin: '0 auto',
-                            }}
-                        >
-                            {cards.map((card, index) => {
-                                const isActive = index === currentSlide;
-                                const distance = index - currentSlide;
-
-                                const isVisible = Math.abs(distance) <= 1 && !(isAnimating && suppressNext && distance === 1)
-                                if (!isVisible) return null;
-
-                                const scale = isActive ? 1.0 : 0.75;
-                                const opacity = isActive ? 1 : 0.6;
-                                const translateX = distance * (cardWidth + gap);
-                                const zIndex = isActive ? 10 : 5;
-
-                                return (
-                                    <div
-                                        key={index}
-                                        className="absolute group cursor-pointer"
-                                        style={{
-                                            width: `${cardWidth}px`,
-                                            transform: `translateX(${translateX}px) scale(${scale})`,
-                                            opacity: opacity,
-                                            filter: isActive
-                                                ? 'none'
-                                                : 'blur(0.5px)',
-                                            zIndex: zIndex,
-                                            left: '50%',
-                                            marginLeft: `-${cardWidth / 2}px`,
-                                            transition:
-                                                'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                        }}
-                                        onClick={() => {
-                                            if (isActive) { handleCardClick(card.link); return; }
-                                            if (isAnimating) return
-
-                                            if (distance === 1) {
-                                                setSuppressNext(true)
-                                            }
-                                            setIsAnimating(true)
-                                            scrollToSlide(index)
-
-                                            setTimeout(() => {
-                                                setIsAnimating(false)
-                                                setSuppressNext(false)
-                                            }, 200)
-                                        }}
-                                    >
-                                        <div
-                                            className="relative h-[375px] rounded-3xl overflow-hidden backdrop-blur-lg border border-white/20 shadow-2xl hover:border-white/40"
-                                            style={{
-                                                transition:
-                                                    'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                            }}
-                                        >
-                                            <img
-                                                src={card.image}
-                                                alt={card.title}
-                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110"
-                                                style={{
-                                                    transition:
-                                                        'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                }}
-                                            />
-
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-
-                                            <div className="relative h-full flex flex-col justify-end p-6">
-                                                <div
-                                                    className="space-y-3 transform translate-y-0 group-hover:-translate-y-2"
-                                                    style={{
-                                                        transition:
-                                                            'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                    }}
-                                                >
-                                                    <div
-                                                        className="w-12 h-1 bg-white/60 rounded-full group-hover:w-20 group-hover:bg-white"
-                                                        style={{
-                                                            transition:
-                                                                'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                                        }}
-                                                    />
-                                                    <h3 className="text-xl font-black text-white tracking-wide">
-                                                        {card.title}
-                                                    </h3>
-                                                    <p className="text-white/70 text-xs">
-                                                        {card.subtitle}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                className={`absolute inset-0 rounded-3xl border-2 transition-all duration-700 ${
-                                                    isActive
-                                                        ? 'border-white/30'
-                                                        : 'border-white/0'
-                                                }`}
-                                            />
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-20 flex items-center gap-8">
-                <button
-                    onClick={handlePrev}
-                    className="w-12 h-12 rounded-full bg-white text-black hover:bg-gray-200 border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
-                >
-                    {'<'}
-                </button>
-
-                <div className="w-72 h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-gradient-to-r from-white to-gray-300 transition-all duration-500 rounded-full"
-                        style={{ width: `${progressPercentage}%` }}
-                    />
-                </div>
-
-                <button
-                    onClick={handleNext}
-                    className="w-12 h-12 rounded-full bg-white text-black hover:bg-gray-200 border-2 border-white flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg"
-                >
-                    {'>'}
-                </button>
-            </div>
-
-            <div
-                className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 transition-all duration-1000 delay-700 ${
-                    isVisible
-                        ? 'opacity-100 translate-y-0'
-                        : 'opacity-0 translate-y-8'
+            {/* Header Section */}
+            <div 
+                className={`absolute top-0 left-0 right-0 z-30 pt-8 flex flex-col items-center text-center transition-all duration-1000 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
                 }`}
             >
-                <p className="text-white/80 text-base italic text-center font-medium mr-10 pl-10">
+                <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
+                    <span className="text-white/60 text-xs uppercase tracking-[0.2em] font-medium">Beyond the Code</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">
+                    EXPLORE <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/60">BEYOND</span>
+                </h1>
+                <p className="text-white/50 text-sm max-w-sm leading-relaxed">
+                    Dive into the stories, sounds, and experiences that shape who I am.
+                </p>
+            </div>
+
+            {/* Cards Container - Bottom Center */}
+            <div 
+                className="absolute inset-0 flex items-end justify-center pb-32"
+                style={{ transformStyle: 'preserve-3d' }}
+            >
+                {cards.map((card, index) => {
+                    const isFront = index === currentIndex;
+                    const style = getCardStyle(index);
+
+                    return (
+                        <div
+                            key={index}
+                            className={`absolute cursor-pointer`}
+                            style={{
+                                width: `${cardSize}px`,
+                                height: `${cardSize}px`,
+                                ...style,
+                                transition: 'all 1.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                            onClick={() => {
+                                if (isFront && !isAnimating) {
+                                    handleFrontCardClick();
+                                } else if (!isFront && !isAnimating) {
+                                    handleBackCardClick(index);
+                                }
+                            }}
+                        >
+                            <div 
+                                className={`relative w-full h-full rounded-3xl overflow-hidden border transition-all duration-500 ${
+                                    isFront 
+                                        ? 'border-white/30 shadow-2xl hover:border-white/50' 
+                                        : 'border-white/10 hover:border-white/30'
+                                }`}
+                                style={{
+                                    boxShadow: isFront 
+                                        ? '0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 100px rgba(255,255,255,0.1)'
+                                        : '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
+                                }}
+                            >
+                                <img
+                                    src={card.image}
+                                    alt={card.title}
+                                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${
+                                        isFront ? 'hover:scale-110' : ''
+                                    }`}
+                                />
+                                
+                                {/* Gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                                
+                                {/* Dark overlay for back cards */}
+                                {!isFront && (
+                                    <div className="absolute inset-0 bg-black/40 transition-opacity duration-300 hover:opacity-20" />
+                                )}
+
+                                {/* Card content */}
+                                <div className="absolute bottom-0 left-0 right-0 p-6">
+                                    <div className={`transition-all duration-300 ${isFront ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-70'}`}>
+                                        <div className={`w-12 h-1 rounded-full mb-4 transition-all duration-300 ${
+                                            isFront ? 'bg-white w-16' : 'bg-white/50'
+                                        }`} />
+                                        <h3 className={`font-black tracking-wide mb-2 transition-all duration-300 ${
+                                            isFront ? 'text-2xl text-white' : 'text-xl text-white/80'
+                                        }`}>
+                                            {card.title}
+                                        </h3>
+                                        {isFront && (
+                                            <p className="text-white/70 text-base">{card.subtitle}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Click hint for back cards */}
+                                {!isFront && !isAnimating && (
+                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                        <div className="px-5 py-3 bg-white/20 backdrop-blur-sm rounded-full text-base font-medium">
+                                            Click to view
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Glow border for front card */}
+                                {isFront && (
+                                    <div className="absolute inset-0 rounded-3xl border-2 border-white/0 hover:border-white/40 transition-all duration-500" />
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Navigation Buttons */}
+            {!isFirstCard && (
+                <div className="absolute inset-y-0 left-8 flex items-center z-50">
+                    <button
+                        onClick={goToPrev}
+                        disabled={isAnimating}
+                        className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                        <ChevronLeft className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+                    </button>
+                </div>
+            )}
+
+            {!isLastCard && (
+                <div className="absolute inset-y-0 right-8 flex items-center z-50">
+                    <button
+                        onClick={goToNext}
+                        disabled={isAnimating}
+                        className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                        <ChevronRight className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+                    </button>
+                </div>
+            )}
+
+            {/* Bottom Quote */}
+            <div
+                className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-1000 delay-700 ${
+                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                }`}
+            >
+                <p className="text-white/60 text-sm italic text-center font-medium">
                     "Every story has a rhythm — this is mine."
                 </p>
             </div>
 
             <style jsx>{`
-                @keyframes float {
-                    0%,
+                @keyframes zoomOut {
+                    0% {
+                        transform: translateZ(0) scale(1);
+                        opacity: 1;
+                    }
                     100% {
-                        transform: translate(0, 0) scale(1);
+                        transform: translateZ(400px) scale(1.5);
+                        opacity: 0;
                     }
-                    33% {
-                        transform: translate(30px, -50px) scale(1.1);
-                    }
-                    66% {
-                        transform: translate(-20px, 30px) scale(0.9);
-                    }
-                }
-
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-
-                .scrollbar-hide {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
                 }
             `}</style>
 
@@ -337,3 +388,4 @@ const BeyondMain = () => {
 };
 
 export default BeyondMain;
+

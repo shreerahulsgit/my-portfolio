@@ -4,4 +4,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
     base: '/',
     plugins: [react()],
+    server: {
+        port: 3001,           // Unique port for this project
+        strictPort: true,     // Fail if port is already in use
+        hmr: {
+            overlay: true,    // Show errors as overlay
+        },
+    },
+    cacheDir: '.vite-cache-portfolio',  // Project-specific cache directory
 })

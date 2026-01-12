@@ -4,93 +4,105 @@ import LoadingOverlay from "../lib/components/loading-overlay.jsx";
 import SplineMasking from "../lib/components/spline-masking.jsx";
 import Spline from "@splinetool/react-spline";
 
-// Charge Up Animation Component
+// Professional Charge Up Animation Component
 const ChargeUpAnimation = ({ onComplete }) => {
-  const [count, setCount] = useState(100);
-  const [phase, setPhase] = useState("counting"); // counting, dropping, expanding, done
-  const [showChargeText, setShowChargeText] = useState(false);
-  const [expandScale, setExpandScale] = useState(0);
-  const [ballY, setBallY] = useState(48); // Ball sits ON the line (line is at 50%)
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState("counting"); // counting, complete, popup, burst, done
+  const [ballScale, setBallScale] = useState(0);
+  const [burstScale, setBurstScale] = useState(0);
+  const [ringScales, setRingScales] = useState([0, 0, 0]);
   const animationRef = useRef(null);
 
-  // Line width based on count (100% at 100, 0% at 0) - shrinks from right to left
-  const lineWidth = (count / 100) * 40; // 40vw max width
-
-  // Countdown from 100 to 0, then immediately start dropping
+  // Phase 1: Count from 0 to 100
   useEffect(() => {
     if (phase !== "counting") return;
 
-    const interval = setInterval(() => {
-      setCount((prev) => {
-        if (prev <= 0) {
-          clearInterval(interval);
-          setShowChargeText(true); // Show charge text immediately
-          setPhase("dropping"); // Start dropping immediately
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 25); // ~2.5 seconds total
-
-    return () => clearInterval(interval);
-  }, [phase]);
-
-  // Ball falling from line to bottom with realistic slow gravity
-  useEffect(() => {
-    if (phase !== "dropping") return;
-
-    let currentY = 48; // Start from on the line
-    let velocity = 0;
-    const gravity = 0.08; // Very slow, realistic gravity
-    const targetY = 88; // Bottom position
-    const damping = 0.55; // Realistic bounce damping (loses ~45% energy each bounce)
-    let bounces = 0;
+    const duration = 2000; // 2 seconds
+    const startTime = Date.now();
 
     const animate = () => {
-      velocity += gravity;
-      currentY += velocity;
+      const elapsed = Date.now() - startTime;
+      const rawProgress = Math.min((elapsed / duration) * 100, 100);
+      
+      setProgress(Math.round(rawProgress));
 
-      // Hit bottom
-      if (currentY >= targetY) {
-        currentY = targetY;
-        velocity = -velocity * damping;
-        bounces++;
+      if (elapsed < duration) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        setProgress(100);
+        setPhase("complete");
+      }
+    };
 
-        // After 3 realistic bounces, start expanding
-        if (bounces >= 3 || Math.abs(velocity) < 0.2) {
-          setBallY(targetY);
-          setPhase("expanding");
-          return;
-        }
+    animationRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [phase]);
+
+  // Phase 2: Hold at 100%, then move to popup
+  useEffect(() => {
+    if (phase !== "complete") return;
+    
+    const timer = setTimeout(() => {
+      setPhase("popup");
+    }, 600); // Hold for 600ms
+    
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  // Phase 3: Ball pops up in center
+  useEffect(() => {
+    if (phase !== "popup") return;
+
+    let scale = 0;
+    const targetScale = 60; // Ball size in pixels
+
+    const animate = () => {
+      // Elastic pop-up effect
+      scale += (targetScale - scale) * 0.15;
+      setBallScale(scale);
+
+      if (scale >= targetScale - 1) {
+        setBallScale(targetScale);
+        setTimeout(() => setPhase("burst"), 300); // Hold ball briefly
+        return;
       }
 
-      setBallY(currentY);
       animationRef.current = requestAnimationFrame(animate);
     };
 
     animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
+    return () => cancelAnimationFrame(animationRef.current);
   }, [phase]);
 
-  // Ball expansion from bottom - VERY SLOW and smooth
+  // Phase 4: Ball bursts with expanding rings
   useEffect(() => {
-    if (phase !== "expanding") return;
+    if (phase !== "burst") return;
 
-    let currentScale = 24; // Start from ball size
+    let scale = 60;
     const maxScale = Math.max(window.innerWidth, window.innerHeight) * 3;
+    let rings = [0, 0, 0];
+    let frame = 0;
 
     const animate = () => {
-      // Very slow, smooth expansion
-      const speed = 0.015; // Much slower for premium feel
-      currentScale += (maxScale - currentScale) * speed;
-      setExpandScale(currentScale);
+      frame++;
+      
+      // Main burst expansion - SLOWER for cinematic effect
+      scale *= 1.04;
+      setBurstScale(scale);
 
-      if (currentScale >= maxScale * 0.85) {
+      // Trigger rings at intervals
+      if (frame === 5) rings[0] = 1;
+      if (frame === 15) rings[1] = 1;
+      if (frame === 25) rings[2] = 1;
+
+      // Expand rings
+      rings = rings.map((r, i) => {
+        if (r > 0) return r * 1.08;
+        return 0;
+      });
+      setRingScales([...rings]);
+
+      if (scale >= maxScale) {
         setPhase("done");
         onComplete();
         return;
@@ -100,109 +112,110 @@ const ChargeUpAnimation = ({ onComplete }) => {
     };
 
     animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
+    return () => cancelAnimationFrame(animationRef.current);
   }, [phase, onComplete]);
 
   if (phase === "done") return null;
 
   return (
     <div 
-      className="fixed inset-0 z-[10000] overflow-hidden"
+      className="fixed inset-0 z-[10000] flex items-center justify-center overflow-hidden"
       style={{ backgroundColor: "#000000" }}
     >
-      {/* Counter - Bottom Left (hides when Charge Up shows) */}
-      {!showChargeText && (
-        <div
-          className="absolute z-20 transition-opacity duration-300"
+      {/* Progress counter - bottom left */}
+      {(phase === "counting" || phase === "complete") && (
+        <div 
+          className="absolute bottom-16 left-16 z-20"
           style={{
-            bottom: "15%",
-            left: "8%",
-            opacity: phase === "expanding" || phase === "dropping" ? 0 : 1,
+            opacity: phase === "complete" ? 0 : 1,
+            transition: "opacity 0.3s ease-out",
           }}
         >
-          <span
-            className="text-white/80 text-7xl md:text-9xl font-light"
-            style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {count}
-          </span>
+          <div className="flex items-baseline gap-1">
+            <span 
+              className="text-white text-9xl font-thin tracking-tighter"
+              style={{ 
+                fontFamily: "'Inter', system-ui, sans-serif", 
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {progress}
+            </span>
+            <span className="text-white/40 text-3xl font-thin">%</span>
+          </div>
         </div>
       )}
 
-      {/* Horizontal Energy Line - Center, shrinks from right to left */}
-      {phase === "counting" && (
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+      {/* 100% Complete indicator - center */}
+      {phase === "complete" && (
+        <div className="text-white text-2xl font-light tracking-[0.5em] uppercase animate-pulse">
+          READY
+        </div>
+      )}
+
+      {/* Ball popup */}
+      {phase === "popup" && (
+        <div 
+          className="rounded-full"
           style={{
-            width: `${lineWidth}vw`,
-            height: "2px",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            transition: "width 0.1s ease-out",
+            width: `${ballScale}px`,
+            height: `${ballScale}px`,
+            background: 'radial-gradient(circle at 30% 30%, #ffffff 0%, #f0f0f0 40%, #d0d0d0 100%)',
+            boxShadow: `
+              0 0 ${ballScale}px rgba(255, 255, 255, 0.9),
+              0 0 ${ballScale * 2}px rgba(255, 255, 255, 0.5),
+              0 0 ${ballScale * 3}px rgba(255, 255, 255, 0.3)
+            `,
           }}
         />
       )}
 
-      {/* Energy Ball - moves from center to bottom */}
-      {phase !== "expanding" && phase !== "done" && (
-        <div
-          className="absolute left-1/2 rounded-full"
-          style={{
-            width: "24px",
-            height: "24px",
-            top: `${ballY}%`,
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 0.5)",
-          }}
-        />
-      )}
-
-      {/* Expanding Ball from Bottom */}
-      {phase === "expanding" && (
-        <div
-          className="absolute bg-white"
-          style={{
-            width: `${expandScale}px`,
-            height: `${expandScale}px`,
-            left: "50%",
-            bottom: "0",
-            transform: "translateX(-50%)",
-            borderRadius: "50% 50% 0 0",
-          }}
-        />
-      )}
-
-      {/* Charge Up Text - Bottom Left (shows briefly during drop) */}
-      {showChargeText && phase === "dropping" && (
-        <div
-          className="absolute z-30 transition-all duration-500 ease-out"
-          style={{
-            bottom: "15%",
-            left: "8%",
-            opacity: 1,
-          }}
-        >
-          <span
-            className="text-white text-4xl md:text-6xl font-light tracking-[0.2em] uppercase"
+      {/* Burst expansion */}
+      {phase === "burst" && (
+        <>
+          {/* Main burst with dynamic glow */}
+          <div 
+            className="absolute rounded-full"
             style={{
-              fontFamily: "'Inter', system-ui, sans-serif",
+              width: `${burstScale}px`,
+              height: `${burstScale}px`,
+              background: 'radial-gradient(circle, #ffffff 0%, #fafafa 30%, #f0f0f0 100%)',
+              boxShadow: `
+                0 0 ${Math.min(burstScale * 0.5, 200)}px rgba(255, 255, 255, 1),
+                0 0 ${Math.min(burstScale, 400)}px rgba(255, 255, 255, 0.8),
+                0 0 ${Math.min(burstScale * 1.5, 600)}px rgba(255, 255, 255, 0.5),
+                0 0 ${Math.min(burstScale * 2, 800)}px rgba(255, 255, 255, 0.3)
+              `,
             }}
-          >
-            Charge Up
+          />
+          
+          {/* Expanding rings */}
+          {ringScales.map((scale, i) => scale > 0 && (
+            <div 
+              key={i}
+              className="absolute rounded-full border-2 border-white"
+              style={{
+                width: `${scale * 100}px`,
+                height: `${scale * 100}px`,
+                opacity: Math.max(0, 1 - scale / 20),
+              }}
+            />
+          ))}
+        </>
+      )}
+
+      {/* Minimal branding - bottom right */}
+      {phase === "counting" && (
+        <div className="absolute bottom-16 right-16 z-20">
+          <span className="text-white/20 text-xs uppercase tracking-[0.4em] font-light">
+            Loading Experience
           </span>
         </div>
       )}
     </div>
   );
 };
+
 
 // Mobile Home Page Component
 const MobileHomePage = () => {
