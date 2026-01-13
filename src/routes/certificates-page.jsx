@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Spline from "@splinetool/react-spline";
 import Footer from "../lib/components/footer.jsx";
+import { FaCloud, FaDatabase, FaMicrochip, FaShieldAlt } from "react-icons/fa";
 
 // Custom hook for scroll animation
 const useScrollAnimation = (threshold = 0.2) => {
@@ -31,9 +32,10 @@ const useScrollAnimation = (threshold = 0.2) => {
   return [ref, isVisible];
 };
 
-// Skill Signal Bar Component (segmented blocks)
+// Skill Signal Bar Component (segmented blocks) - VIOLET ENERGY
 const SkillSignalBar = ({ label, value, maxValue = 8, isVisible, delay = 0 }) => {
   const [animatedValue, setAnimatedValue] = useState(0);
+  const energyColor = '#8B5CF6';
 
   useEffect(() => {
     if (isVisible) {
@@ -54,10 +56,10 @@ const SkillSignalBar = ({ label, value, maxValue = 8, isVisible, delay = 0 }) =>
             className="w-2 h-4 rounded-sm transition-all duration-500"
             style={{
               background: idx < animatedValue 
-                ? "rgba(255, 255, 255, 0.7)" 
-                : "rgba(255, 255, 255, 0.1)",
+                ? energyColor
+                : "rgba(139, 92, 246, 0.15)",
               transitionDelay: `${idx * 50}ms`,
-              boxShadow: idx < animatedValue ? "0 0 8px rgba(255, 255, 255, 0.3)" : "none",
+              boxShadow: idx < animatedValue ? `0 0 8px ${energyColor}80` : "none",
             }}
           />
         ))}
@@ -66,97 +68,116 @@ const SkillSignalBar = ({ label, value, maxValue = 8, isVisible, delay = 0 }) =>
   );
 };
 
-// Impact Meter Bar Component (solid continuous bar)
-const ImpactMeterBar = ({ label, value, maxValue = 10, isVisible, delay = 0 }) => {
-  const [animatedWidth, setAnimatedWidth] = useState(0);
 
-  useEffect(() => {
-    if (isVisible) {
-      const timeout = setTimeout(() => {
-        setAnimatedWidth((value / maxValue) * 100);
-      }, delay);
-      return () => clearTimeout(timeout);
-    }
-  }, [isVisible, value, maxValue, delay]);
 
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-20 font-medium tracking-wide">{label}</span>
-      <div 
-        className="flex-1 h-2 rounded-full overflow-hidden"
-        style={{ background: "rgba(255, 255, 255, 0.1)" }}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-1000 ease-out"
-          style={{
-            width: `${animatedWidth}%`,
-            background: "linear-gradient(90deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.8))",
-            boxShadow: "0 0 12px rgba(255, 255, 255, 0.3)",
-          }}
-        />
-      </div>
-    </div>
-  );
-};
-
-// Timeline Card Component with Hover Points
+// Timeline Card Component - Expandable like NPTEL cards
 const TimelineCard = ({ course, index, isVisible }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isLeft = index % 2 === 0;
 
-  const CardContent = () => (
+  const cardContent = (
     <div
-      className="max-w-md w-full p-6 rounded-2xl transition-all duration-500 cursor-default relative"
+      className="max-w-md w-full p-6 rounded-2xl cursor-default relative overflow-hidden"
       style={{
-        background: "rgba(20, 20, 20, 0.7)",
+        background: isHovered 
+          ? "rgba(25, 25, 25, 0.9)" 
+          : "rgba(20, 20, 20, 0.7)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
+        border: isHovered 
+          ? "1px solid rgba(255, 255, 255, 0.2)" 
+          : "1px solid rgba(255, 255, 255, 0.08)",
         boxShadow: isHovered
-          ? "0 20px 60px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)"
+          ? "0 25px 80px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(139, 92, 246, 0.3)"
           : "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
-        transform: isHovered ? "translateY(-4px)" : "translateY(0)",
+        transform: isHovered ? "translateY(-6px)" : "translateY(0)",
+        transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Top shine line */}
       <div
-        className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-2xl"
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{
           background: isHovered
-            ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)"
-            : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+            ? "linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent)"
+            : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)",
+          transition: "all 0.5s ease",
+        }}
+      />
+
+      {/* Glow on hover */}
+      <div
+        className="absolute -inset-1 rounded-2xl pointer-events-none"
+        style={{
+          background: "radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 60%)",
+          opacity: isHovered ? 1 : 0,
+          transition: "opacity 0.5s ease",
         }}
       />
       
-      <h3 className="text-lg font-semibold text-white mb-2">{course.name}</h3>
-      <p className="text-sm text-gray-400 mb-4 leading-relaxed">{course.takeaway}</p>
-      
-      {/* Hover Points */}
-      <div 
-        className="overflow-hidden transition-all duration-500"
-        style={{
-          maxHeight: isHovered ? "100px" : "0px",
-          opacity: isHovered ? 1 : 0,
-          marginBottom: isHovered ? "16px" : "0px",
-        }}
-      >
-        <div className="space-y-1">
-          {course.points?.map((point, idx) => (
-            <div key={idx} className="flex items-start gap-2">
-              <span className="text-gray-500 text-xs mt-0.5">→</span>
-              <p className="text-xs text-gray-400">{point}</p>
+      <div className="relative z-10">
+        {/* Always visible: Title and Takeaway */}
+        <h3 
+          className="text-lg font-semibold mb-2 transition-colors duration-300"
+          style={{ color: isHovered ? "#ffffff" : "#e5e7eb" }}
+        >
+          {course.name}
+        </h3>
+        <p 
+          className="text-sm leading-relaxed transition-colors duration-300"
+          style={{ color: isHovered ? "#d1d5db" : "#9ca3af" }}
+        >
+          {course.takeaway}
+        </p>
+        {/* Expandable content on hover */}
+        <div
+          className="grid"
+          style={{
+            gridTemplateRows: isHovered ? "1fr" : "0fr",
+            opacity: isHovered ? 1 : 0,
+            transition: "grid-template-rows 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          <div className="overflow-hidden min-h-[0px]">
+            {/* Points */}
+            <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+              {course.points?.map((point, idx) => (
+                <div 
+                  key={idx} 
+                  className="flex items-start gap-2"
+                  style={{
+                    opacity: isHovered ? 1 : 0,
+                    transform: isHovered ? "translateX(0)" : "translateX(-8px)",
+                    transition: `all 0.4s ease ${idx * 60 + 100}ms`,
+                  }}
+                >
+                  <span className="text-white/40 text-xs mt-0.5">→</span>
+                  <p className="text-xs text-white/60">{point}</p>
+                </div>
+              ))}
             </div>
-          ))}
+
+            {/* Skill Signals */}
+            <div className="mt-4 space-y-2">
+              <SkillSignalBar label="Skill Signal" value={course.skillSignal} isVisible={isHovered} delay={200} />
+              <SkillSignalBar label="Chaos Level" value={course.chaosLevel} isVisible={isHovered} delay={280} />
+              <SkillSignalBar label="Confidence" value={course.confidence} isVisible={isHovered} delay={360} />
+            </div>
+          </div>
         </div>
-      </div>
-      
-      {/* Skill Signals */}
-      <div className="space-y-2">
-        <SkillSignalBar label="Skill Signal" value={course.skillSignal} isVisible={isVisible} delay={index * 150 + 200} />
-        <SkillSignalBar label="Chaos Level" value={course.chaosLevel} isVisible={isVisible} delay={index * 150 + 300} />
-        <SkillSignalBar label="Confidence" value={course.confidence} isVisible={isVisible} delay={index * 150 + 400} />
+
+        {/* Hover hint */}
+        <div 
+          className="mt-4 text-center transition-all duration-300"
+          style={{
+            opacity: isHovered ? 0 : 0.4,
+            height: isHovered ? "0px" : "auto",
+          }}
+        >
+          <span className="text-xs text-gray-500">hover to explore</span>
+        </div>
       </div>
     </div>
   );
@@ -169,14 +190,14 @@ const TimelineCard = ({ course, index, isVisible }) => {
       {isLeft ? (
         <>
           <div className="w-1/2 pr-12 flex justify-end">
-            <CardContent />
+            {cardContent}
           </div>
           <div className="absolute left-1/2 transform -translate-x-1/2 flex flex-col items-center">
             <div
               className="w-4 h-4 rounded-full transition-all duration-500"
               style={{
-                background: isHovered ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.4)",
-                boxShadow: isHovered ? "0 0 20px rgba(255, 255, 255, 0.6)" : "0 0 8px rgba(255, 255, 255, 0.2)",
+                background: isHovered ? "rgba(139, 92, 246, 0.9)" : "rgba(139, 92, 246, 0.4)",
+                boxShadow: isHovered ? "0 0 20px rgba(139, 92, 246, 0.8)" : "0 0 8px rgba(139, 92, 246, 0.3)",
               }}
             />
           </div>
@@ -195,7 +216,7 @@ const TimelineCard = ({ course, index, isVisible }) => {
             />
           </div>
           <div className="w-1/2 pl-12">
-            <CardContent />
+            {cardContent}
           </div>
         </>
       )}
@@ -241,25 +262,6 @@ const MobileTimelineCard = ({ course, index, isVisible }) => {
         <h3 className="text-base font-semibold text-white mb-2">{course.name}</h3>
         <p className="text-sm text-gray-400 mb-4 leading-relaxed">{course.takeaway}</p>
         
-        {/* Hover Points - hidden by default */}
-        <div 
-          className="overflow-hidden transition-all duration-500"
-          style={{
-            maxHeight: isHovered ? "100px" : "0px",
-            opacity: isHovered ? 1 : 0,
-            marginBottom: isHovered ? "16px" : "0px",
-          }}
-        >
-          <div className="space-y-1">
-            {course.points?.map((point, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <span className="text-gray-500 text-xs mt-0.5">→</span>
-                <p className="text-xs text-gray-400">{point}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        
         <div className="space-y-2">
           <SkillSignalBar label="Skill Signal" value={course.skillSignal} isVisible={isVisible} delay={index * 150 + 200} />
           <SkillSignalBar label="Chaos Level" value={course.chaosLevel} isVisible={isVisible} delay={index * 150 + 300} />
@@ -270,149 +272,194 @@ const MobileTimelineCard = ({ course, index, isVisible }) => {
   );
 };
 
-// NPTEL Card Component - Expandable with hover reveal
-const NPTELCard = ({ cert, index, isVisible }) => {
-  const [isHovered, setIsHovered] = useState(false);
+// NPTEL Constellation Component - Orbital View with Animation
+const NPTELConstellation = ({ certs, isVisible }) => {
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [rotation, setRotation] = useState(0);
+  
+  // Continuous orbital rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotation(prev => (prev + 0.3) % 360);
+    }, 50);
+    return () => clearInterval(interval);
+  }, []);
+  
+  // Position orbs in a circle around center
+  const getOrbPosition = (index, total) => {
+    const baseAngle = (index / total) * 2 * Math.PI - Math.PI / 2;
+    const animatedAngle = baseAngle + (rotation * Math.PI / 180);
+    const radius = 220; // Increased distance from center
+    return {
+      x: Math.cos(animatedAngle) * radius,
+      y: Math.sin(animatedAngle) * radius,
+    };
+  };
 
   return (
-    <div
-      className={`relative rounded-2xl transition-all duration-700 cursor-pointer overflow-hidden ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
-      style={{
-        background: "rgba(20, 20, 20, 0.8)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxShadow: isHovered
-          ? "0 25px 70px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
-          : "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
-        transform: isHovered ? "translateY(-6px)" : "translateY(0)",
-        transitionDelay: `${index * 100}ms`,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <div 
+      className={`relative transition-all duration-1000 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      style={{ minHeight: "650px" }}
     >
-      {/* Top shine line */}
-      <div
-        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+      {/* Central Core - Larger */}
+      <div 
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
         style={{
-          background: isHovered
-            ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)"
-            : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+          width: "140px",
+          height: "140px",
+          background: "radial-gradient(circle, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.08) 50%, transparent 70%)",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 80px rgba(139,92,246,0.2), inset 0 0 40px rgba(139,92,246,0.1)",
+        }}
+      >
+        <span className="text-violet-400 text-2xl font-bold tracking-widest">NPTEL</span>
+      </div>
+
+      {/* Orbital Ring */}
+      <div 
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        style={{
+          width: "440px",
+          height: "440px",
+          border: "1px dashed rgba(139,92,246,0.2)",
         }}
       />
 
-      {/* Glow effect */}
-      <div
-        className="absolute -inset-1 rounded-2xl blur-xl transition-all duration-500 pointer-events-none"
-        style={{
-          background: "rgba(255, 255, 255, 0.08)",
-          opacity: isHovered ? 0.6 : 0,
-        }}
-      />
-
-      <div className="relative z-10 p-6">
-        {/* Header */}
-        <div className="flex items-start gap-4 mb-4">
-          <div 
-            className="text-3xl transition-all duration-500"
+      {/* Certification Orbs */}
+      {certs.map((cert, index) => {
+        const pos = activeIndex === index 
+          ? getOrbPosition(index, certs.length) // Keep position when hovered
+          : getOrbPosition(index, certs.length);
+        const isActive = activeIndex === index;
+        const IconComponent = cert.Icon;
+        
+        return (
+          <div
+            key={cert.name}
+            className="absolute left-1/2 top-1/2 cursor-pointer"
             style={{
-              transform: isHovered ? "scale(1.1)" : "scale(1)",
-              filter: isHovered ? "drop-shadow(0 0 12px rgba(255, 255, 255, 0.3))" : "none",
+              transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) scale(${isActive ? 1.3 : 1})`,
+              zIndex: isActive ? 20 : 5,
+              transition: isActive ? "transform 0.3s ease-out" : "none",
             }}
+            onMouseEnter={() => setActiveIndex(index)}
+            onMouseLeave={() => setActiveIndex(null)}
           >
-            {cert.icon}
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white mb-1">{cert.name}</h3>
-            <span
-              className="inline-block px-2 py-0.5 rounded-full text-xs"
+            {/* Orb - Larger */}
+            <div
+              className="relative flex items-center justify-center transition-all duration-300"
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
-                color: "rgba(255, 255, 255, 0.6)",
+                width: isActive ? "110px" : "90px",
+                height: isActive ? "110px" : "90px",
+                background: isActive 
+                  ? "radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(139,92,246,0.15) 60%, transparent 100%)"
+                  : "radial-gradient(circle, rgba(139,92,246,0.18) 0%, rgba(139,92,246,0.06) 60%, transparent 100%)",
+                borderRadius: "50%",
+                border: isActive ? "2px solid rgba(139,92,246,0.6)" : "1px solid rgba(139,92,246,0.3)",
+                boxShadow: isActive 
+                  ? "0 0 50px rgba(139,92,246,0.5), 0 0 100px rgba(139,92,246,0.2)"
+                  : "0 0 25px rgba(139,92,246,0.15)",
               }}
             >
-              {cert.platform}
-            </span>
-          </div>
-        </div>
+              <IconComponent 
+                className="transition-all duration-300"
+                style={{ 
+                  fontSize: isActive ? "2.5rem" : "2rem",
+                  color: isActive ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.6)",
+                }} 
+              />
+            </div>
 
-        {/* Focus area - always visible */}
-        <p className="text-sm text-gray-400 mb-3">{cert.focus}</p>
+            {/* Detail Panel - appears on hover */}
+            <div
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-4 transition-all duration-300 pointer-events-none"
+              style={{
+                opacity: isActive ? 1 : 0,
+                transform: `translateX(-50%) translateY(${isActive ? "0" : "-10px"})`,
+                width: "300px",
+              }}
+            >
+              <div
+                className="p-5 rounded-xl text-center"
+                style={{
+                  background: "rgba(15, 15, 15, 0.98)",
+                  backdropFilter: "blur(24px)",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  boxShadow: "0 25px 80px rgba(0,0,0,0.6)",
+                }}
+              >
+                <h4 className="text-white font-semibold text-lg mb-1">{cert.name}</h4>
+                <p className="text-gray-500 text-sm mb-3">{cert.focus}</p>
+                
+                {/* Tags */}
+                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
+                  {cert.tags?.map((tag, idx) => (
+                    <span 
+                      key={idx}
+                      className="text-xs px-2.5 py-1 rounded-full bg-white/5 text-gray-400 border border-white/10"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
 
-        {/* Expanded content on hover */}
-        <div
-          className="overflow-hidden transition-all duration-500"
-          style={{
-            maxHeight: isHovered ? "150px" : "0px",
-            opacity: isHovered ? 1 : 0,
-          }}
-        >
-          <p className="text-sm text-gray-500 leading-relaxed mb-4">{cert.why}</p>
-          
-          {/* Progress indicators */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500 w-16">Depth</span>
-              <div className="flex gap-0.5">
-                {Array.from({ length: 8 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="w-2 h-3 rounded-sm transition-all duration-300"
-                    style={{
-                      background: idx < cert.depth ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.1)",
-                      transitionDelay: `${idx * 40}ms`,
-                    }}
-                  />
-                ))}
+                {/* Metrics */}
+                <div className="flex justify-center gap-5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 uppercase tracking-wide">Depth</span>
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 8 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="w-1.5 h-3 rounded-sm"
+                          style={{
+                            background: idx < cert.depth ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.15)",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 uppercase tracking-wide">Theory</span>
+                    <div className="flex gap-0.5">
+                      {Array.from({ length: 8 }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className="w-1.5 h-3 rounded-sm"
+                          style={{
+                            background: idx < cert.theory ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.15)",
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gray-500 w-16">Theory</span>
-              <div className="flex gap-0.5">
-                {Array.from({ length: 8 }).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="w-2 h-3 rounded-sm transition-all duration-300"
-                    style={{
-                      background: idx < cert.theory ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.1)",
-                      transitionDelay: `${idx * 40}ms`,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
           </div>
-        </div>
-
-        {/* Hover indicator */}
-        <div 
-          className="flex justify-center mt-4 transition-all duration-300"
-          style={{
-            opacity: isHovered ? 0 : 0.5,
-          }}
-        >
-          <span className="text-xs text-gray-500">hover to explore</span>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 };
 
-// Workshop Card Component - Updated with staggered slide animation
+// Workshop Card Component
 const WorkshopCard = ({ workshop, index, isVisible }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div
-      className={`relative rounded-2xl transition-all duration-700 cursor-pointer overflow-hidden ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
+      className={`relative rounded-2xl transition-all duration-700 cursor-pointer overflow-hidden group ${isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-12"}`}
       style={{
         background: "rgba(20, 20, 20, 0.7)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         boxShadow: isHovered
-          ? "0 25px 70px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+          ? "0 25px 70px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(139, 92, 246, 0.3)"
           : "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
         transform: isHovered ? "translateY(-8px) scale(1.02)" : "translateY(0) scale(1)",
         transitionDelay: `${index * 120}ms`,
@@ -425,43 +472,63 @@ const WorkshopCard = ({ workshop, index, isVisible }) => {
         className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{
           background: isHovered
-            ? "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)"
+            ? "linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent)"
             : "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
-        }}
-      />
-
-      {/* Subtle glow on hover */}
-      <div
-        className="absolute -inset-1 rounded-2xl blur-xl transition-all duration-500 pointer-events-none"
-        style={{
-          background: "rgba(255, 255, 255, 0.1)",
-          opacity: isHovered ? 0.5 : 0,
         }}
       />
 
       <div className="relative z-10 p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1">{workshop.name}</h3>
-            <p className="text-xs text-gray-500">{workshop.platform}</p>
+            <h3 className="text-lg font-semibold mb-1 group-hover:text-violet-300 transition-colors" style={{ color: '#A78BFA' }}>{workshop.name}</h3>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/60">
+                {workshop.platform}
+            </span>
           </div>
-          {/* Animated indicator */}
           <div 
             className="w-2 h-2 rounded-full transition-all duration-500"
             style={{
-              background: isHovered ? "rgba(255, 255, 255, 0.8)" : "rgba(255, 255, 255, 0.3)",
-              boxShadow: isHovered ? "0 0 12px rgba(255, 255, 255, 0.5)" : "none",
+              background: isHovered ? "rgba(139, 92, 246, 0.9)" : "rgba(255, 255, 255, 0.3)",
+              boxShadow: isHovered ? "0 0 12px rgba(139, 92, 246, 0.8)" : "none",
             }}
           />
         </div>
         
         <p className="text-sm text-gray-400 mb-5 leading-relaxed">{workshop.shortDesc}</p>
 
-        {/* Impact Meters - always visible, animate on scroll */}
-        <div className="space-y-3">
-          <ImpactMeterBar label="Impact" value={workshop.impact} isVisible={isVisible} delay={index * 120 + 200} />
-          <ImpactMeterBar label="Complexity" value={workshop.complexity} isVisible={isVisible} delay={index * 120 + 300} />
-          <ImpactMeterBar label="Hands-on" value={workshop.handsOn} isVisible={isVisible} delay={index * 120 + 400} />
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 mb-4">
+            {workshop.tags.map((tag, idx) => (
+                <span 
+                    key={idx}
+                    className="text-xs px-2 py-1 rounded bg-white/5 border border-white/5 text-gray-400 transition-colors duration-300"
+                    style={{
+                        borderColor: isHovered ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)",
+                        color: isHovered ? "#E5E7EB" : "#9CA3AF"
+                    }}
+                >
+                    {tag}
+                </span>
+            ))}
+        </div>
+
+        {/* Expanding Outcome Section */}
+        <div
+          className="grid"
+          style={{
+            gridTemplateRows: isHovered ? "1fr" : "0fr",
+            opacity: isHovered ? 1 : 0,
+            transition: "grid-template-rows 500ms cubic-bezier(0.4, 0, 0.2, 1), opacity 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+            <div className="overflow-hidden min-h-[0px]">
+                <div className="pt-4 border-t border-white/10">
+                    <p className="text-xs font-semibold mb-1" style={{ color: '#A78BFA' }}>Key Outcome</p>
+                    <p className="text-sm text-gray-300 leading-relaxed">
+                        {workshop.outcome}
+                    </p>
+                </div>
+            </div>
         </div>
       </div>
     </div>
@@ -472,7 +539,7 @@ const WorkshopCard = ({ workshop, index, isVisible }) => {
 const SectionHeader = ({ title, badge, subtitle, isVisible }) => (
   <div className={`mb-16 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
     <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-      <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300">
+      <h2 className="text-3xl md:text-4xl font-bold text-white">
         {title}
       </h2>
       <span
@@ -488,177 +555,198 @@ const SectionHeader = ({ title, badge, subtitle, isVisible }) => (
         <div
           className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
           style={{
-            background: "linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)",
+            background: "linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%)",
           }}
         />
         <span className="relative z-10">{badge}</span>
       </span>
     </div>
-    <p className="text-lg text-gray-400">{subtitle}</p>
+    <p className="text-lg" style={{ color: '#A78BFA' }}>{subtitle}</p>
   </div>
 );
 
-// Main Certificates Page
-export default function CertificatesPage() {
-  const [splineLoaded, setSplineLoaded] = useState(false);
-  const [splineError, setSplineError] = useState(false);
+// Certificate Data
+const trainingCourses = [
+  {
+    name: "Building Static Websites",
+    takeaway: "where syntax stopped looking like alien code.",
+    points: ["HTML structure became second nature", "CSS layouts clicked after painful hours", "First portfolio site was ugly but mine"],
+    skillSignal: 7, chaosLevel: 5, confidence: 6,
+  },
+  {
+    name: "Responsive Website Design",
+    takeaway: "learned that websites should not break on phones.",
+    points: ["Flexbox changed everything", "Media queries are actually elegant", "Mobile-first is the way"],
+    skillSignal: 7, chaosLevel: 6, confidence: 7,
+  },
+  {
+    name: "Dynamic Web Development",
+    takeaway: "made things click, animate, and occasionally crash.",
+    points: ["DOM manipulation is powerful", "Event listeners everywhere", "Async/await saved my sanity"],
+    skillSignal: 8, chaosLevel: 7, confidence: 6,
+  },
+  {
+    name: "SQL Database",
+    takeaway: "talked to databases without making them angry.",
+    points: ["JOINs are still humbling", "Indexing matters more than expected", "Data normalization is an art"],
+    skillSignal: 6, chaosLevel: 5, confidence: 5,
+  },
+  {
+    name: "Python Programming",
+    takeaway: "automated boring stuff. felt like a wizard.",
+    points: ["List comprehensions are beautiful", "Libraries for everything", "Clean syntax, happy brain"],
+    skillSignal: 7, chaosLevel: 4, confidence: 7,
+  },
+  {
+    name: "XPM 4.0",
+    takeaway: "pressure-cooker that built real resilience.",
+    points: ["Debugging under stress", "Time management is a skill", "Collaboration beats solo grind"],
+    skillSignal: 8, chaosLevel: 8, confidence: 6,
+  },
+];
 
-  const [heroRef, heroVisible] = useScrollAnimation(0.2);
+const nptelCerts = [
+  { 
+    name: "Cloud Computing", 
+    platform: "NPTEL", 
+    Icon: FaCloud, 
+    focus: "Infrastructure & Virtualization", 
+    tags: ["EC2", "VMs", "Containers", "Orchestration"],
+    why: "Understood how the cloud actually works. VMs, containers, and why everything is 'someone else's computer'.", 
+    depth: 7, 
+    theory: 6 
+  },
+  { 
+    name: "Database Management Systems", 
+    platform: "NPTEL", 
+    Icon: FaDatabase, 
+    focus: "RDBMS & Transactions", 
+    tags: ["SQL", "ACID", "Normalization", "Indexing"],
+    why: "Deep dive into how databases think. ACID properties, normalization, and the art of not losing data.", 
+    depth: 8, 
+    theory: 7 
+  },
+  { 
+    name: "Parallel Computing Architecture", 
+    platform: "NPTEL", 
+    Icon: FaMicrochip, 
+    focus: "Concurrency & Performance", 
+    tags: ["Threads", "SIMD", "GPU", "Pipelines"],
+    why: "Learned why more cores = more power (sometimes). Understanding parallelism changed how I think about performance.", 
+    depth: 6, 
+    theory: 8 
+  },
+  { 
+    name: "Ethical Hacking", 
+    platform: "NPTEL", 
+    Icon: FaShieldAlt, 
+    focus: "Security & Penetration Testing", 
+    tags: ["Pen Testing", "Exploits", "Firewalls", "OWASP"],
+    why: "Learned to think like an attacker to become a better defender. Security is a mindset, not just a checkbox.", 
+    depth: 7, 
+    theory: 5 
+  },
+];
+
+const workshops = [
+  { 
+    name: "AWS Cloud Computing", 
+    platform: "NxtWave Workshop", 
+    shortDesc: "deployed stuff to the cloud and it actually worked.", 
+    tags: ["EC2", "S3", "IAM", "VPC"],
+    outcome: "Deployed a highly available web application with load balancing and auto-scaling."
+  },
+  { 
+    name: "GEN AI 2.0", 
+    platform: "NxtWave Workshop", 
+    shortDesc: "explored the AI revolution. prompt engineering is an art form.", 
+    tags: ["LLMs", "Prompt Eng", "Fine-tuning", "APIs"],
+    outcome: "Built a custom chatbot integrated with external knowledge bases."
+  },
+  { 
+    name: "UI/UX Designing", 
+    platform: "NxtWave Workshop", 
+    shortDesc: "learned that pixels matter and white space is not empty space.", 
+    tags: ["Figma", "Wireframing", "Prototyping", "User Flow"],
+    outcome: "Designed a complete mobile app interface from user research to hi-fi prototype."
+  },
+  { 
+    name: "MCP", 
+    platform: "NxtWave Workshop", 
+    shortDesc: "model context protocol. understanding how AI systems talk.", 
+    tags: ["Protocol Design", "AI Agents", "System Arch", "JSON-RPC"],
+    outcome: "Implemented a custom MCP server to expose local tools to an AI assistant."
+  },
+];
+
+// Certificates Content Component (for tabbed interface)
+export const CertificatesContent = () => {
   const [trainingRef, trainingVisible] = useScrollAnimation(0.1);
   const [nptelRef, nptelVisible] = useScrollAnimation(0.1);
   const [workshopRef, workshopVisible] = useScrollAnimation(0.1);
 
-  // Training Courses - NxtWave
-  const trainingCourses = [
-    {
-      name: "Building Static Websites",
-      takeaway: "where syntax stopped looking like alien code.",
-      points: [
-        "HTML structure became second nature",
-        "CSS layouts clicked after painful hours",
-        "First portfolio site was ugly but mine",
-      ],
-      skillSignal: 7,
-      chaosLevel: 5,
-      confidence: 6,
-    },
-    {
-      name: "Responsive Website Design",
-      takeaway: "learned that websites should not break on phones.",
-      points: [
-        "Flexbox changed everything",
-        "Media queries are actually elegant",
-        "Mobile-first is the way",
-      ],
-      skillSignal: 7,
-      chaosLevel: 6,
-      confidence: 7,
-    },
-    {
-      name: "Dynamic Web Development",
-      takeaway: "made things click, animate, and occasionally crash.",
-      points: [
-        "DOM manipulation is powerful",
-        "Event listeners everywhere",
-        "Async/await saved my sanity",
-      ],
-      skillSignal: 8,
-      chaosLevel: 7,
-      confidence: 6,
-    },
-    {
-      name: "SQL Database",
-      takeaway: "talked to databases without making them angry.",
-      points: [
-        "JOINs are still humbling",
-        "Indexing matters more than expected",
-        "Data normalization is an art",
-      ],
-      skillSignal: 6,
-      chaosLevel: 5,
-      confidence: 5,
-    },
-    {
-      name: "Python Programming",
-      takeaway: "automated boring stuff. felt like a wizard.",
-      points: [
-        "List comprehensions are beautiful",
-        "Libraries for everything",
-        "Clean syntax, happy brain",
-      ],
-      skillSignal: 7,
-      chaosLevel: 4,
-      confidence: 7,
-    },
-    {
-      name: "XPM 4.0",
-      takeaway: "pressure-cooker that built real resilience.",
-      points: [
-        "Debugging under stress",
-        "Time management is a skill",
-        "Collaboration beats solo grind",
-      ],
-      skillSignal: 8,
-      chaosLevel: 8,
-      confidence: 6,
-    },
-  ];
+  return (
+    <div className="space-y-20">
+      {/* Training Courses Section */}
+      <section ref={trainingRef}>
+        <SectionHeader
+          title="Training Courses"
+          badge="Core Skill Unlocks"
+          subtitle="the foundation. where the real learning happened."
+          isVisible={trainingVisible}
+        />
+        <div className="relative">
+          <div 
+            className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px transform -translate-x-1/2"
+            style={{ background: "linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05))" }}
+          />
+          <div className="hidden md:block">
+            {trainingCourses.map((course, index) => (
+              <TimelineCard key={course.name} course={course} index={index} isVisible={trainingVisible} />
+            ))}
+          </div>
+          <div className="md:hidden">
+            {trainingCourses.map((course, index) => (
+              <MobileTimelineCard key={course.name} course={course} index={index} isVisible={trainingVisible} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-  // NPTEL Certifications
-  const nptelCerts = [
-    {
-      name: "Cloud Computing",
-      platform: "NPTEL",
-      icon: "☁️",
-      focus: "Infrastructure & Virtualization",
-      why: "Understood how the cloud actually works. VMs, containers, and why everything is 'someone else's computer'.",
-      depth: 7,
-      theory: 6,
-    },
-    {
-      name: "Database Management Systems",
-      platform: "NPTEL",
-      icon: "📊",
-      focus: "RDBMS & Transactions",
-      why: "Deep dive into how databases think. ACID properties, normalization, and the art of not losing data.",
-      depth: 8,
-      theory: 7,
-    },
-    {
-      name: "Parallel Computing Architecture",
-      platform: "NPTEL",
-      icon: "⚡",
-      focus: "Concurrency & Performance",
-      why: "Learned why more cores = more power (sometimes). Understanding parallelism changed how I think about performance.",
-      depth: 6,
-      theory: 8,
-    },
-    {
-      name: "Ethical Hacking",
-      platform: "NPTEL",
-      icon: "🔐",
-      focus: "Security & Penetration Testing",
-      why: "Learned to think like an attacker to become a better defender. Security is a mindset, not just a checkbox.",
-      depth: 7,
-      theory: 5,
-    },
-  ];
+      {/* NPTEL Section */}
+      <section ref={nptelRef}>
+        <SectionHeader
+          title="NPTEL Certifications"
+          badge="Academic XP"
+          subtitle="the serious stuff. university-level learning."
+          isVisible={nptelVisible}
+        />
+        <NPTELConstellation certs={nptelCerts} isVisible={nptelVisible} />
+      </section>
 
-  // Workshops - NxtWave
-  const workshops = [
-    {
-      name: "AWS Cloud Computing",
-      platform: "NxtWave Workshop",
-      shortDesc: "deployed stuff to the cloud and it actually worked.",
-      impact: 8,
-      complexity: 7,
-      handsOn: 9,
-    },
-    {
-      name: "GEN AI 2.0",
-      platform: "NxtWave Workshop",
-      shortDesc: "explored the AI revolution. prompt engineering is an art form.",
-      impact: 9,
-      complexity: 6,
-      handsOn: 8,
-    },
-    {
-      name: "UI/UX Designing",
-      platform: "NxtWave Workshop",
-      shortDesc: "learned that pixels matter and white space is not empty space.",
-      impact: 7,
-      complexity: 5,
-      handsOn: 8,
-    },
-    {
-      name: "MCP",
-      platform: "NxtWave Workshop",
-      shortDesc: "model context protocol. understanding how AI systems talk.",
-      impact: 8,
-      complexity: 8,
-      handsOn: 7,
-    },
-  ];
+      {/* Workshops Section */}
+      <section ref={workshopRef}>
+        <SectionHeader
+          title="Workshops & Hands-On"
+          badge="Touched Real Tech"
+          subtitle="learned by doing. breaking. fixing."
+          isVisible={workshopVisible}
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {workshops.map((workshop, index) => (
+            <WorkshopCard key={workshop.name} workshop={workshop} index={index} isVisible={workshopVisible} />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// Main Certificates Page (standalone)
+export default function CertificatesPage() {
+  const [splineLoaded, setSplineLoaded] = useState(false);
+  const [splineError, setSplineError] = useState(false);
+  const [heroRef, heroVisible] = useScrollAnimation(0.2);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -702,21 +790,14 @@ export default function CertificatesPage() {
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
                 border: "1px solid rgba(255, 255, 255, 0.15)",
-                boxShadow: "0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
                 color: "#E5E7EB",
               }}
             >
-              <div
-                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)",
-                }}
-              />
               <span className="relative z-10">proof I didn't just watch tutorials</span>
             </div>
 
             <h1
-              className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
+              className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
               style={{ transitionDelay: "200ms" }}
             >
               Receipts
@@ -728,83 +809,15 @@ export default function CertificatesPage() {
             >
               things I actually finished and learned from.
             </p>
-
-            <p
-              className={`text-sm text-gray-500 italic transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
-              style={{ transitionDelay: "600ms" }}
-            >
-              not ratings. just signals.
-            </p>
           </div>
         </section>
 
-        {/* Training Courses Section */}
-        <section ref={trainingRef} className="px-6 md:px-12 lg:px-24 py-20">
+        {/* Certificates Content */}
+        <div className="px-6 md:px-12 lg:px-24 py-20">
           <div className="max-w-6xl mx-auto">
-            <SectionHeader
-              title="Training Courses"
-              badge="Core Skill Unlocks"
-              subtitle="the foundation. where the real learning happened."
-              isVisible={trainingVisible}
-            />
-
-            {/* Timeline */}
-            <div className="relative">
-              <div 
-                className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px transform -translate-x-1/2"
-                style={{ background: "linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05))" }}
-              />
-
-              <div className="hidden md:block">
-                {trainingCourses.map((course, index) => (
-                  <TimelineCard key={course.name} course={course} index={index} isVisible={trainingVisible} />
-                ))}
-              </div>
-
-              <div className="md:hidden">
-                {trainingCourses.map((course, index) => (
-                  <MobileTimelineCard key={course.name} course={course} index={index} isVisible={trainingVisible} />
-                ))}
-              </div>
-            </div>
+            <CertificatesContent />
           </div>
-        </section>
-
-        {/* NPTEL Section */}
-        <section ref={nptelRef} className="px-6 md:px-12 lg:px-24 py-20">
-          <div className="max-w-6xl mx-auto">
-            <SectionHeader
-              title="NPTEL Certifications"
-              badge="Academic XP"
-              subtitle="the serious stuff. university-level learning."
-              isVisible={nptelVisible}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {nptelCerts.map((cert, index) => (
-                <NPTELCard key={cert.name} cert={cert} index={index} isVisible={nptelVisible} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Workshops Section */}
-        <section ref={workshopRef} className="px-6 md:px-12 lg:px-24 py-20">
-          <div className="max-w-6xl mx-auto">
-            <SectionHeader
-              title="Workshops & Hands-On"
-              badge="Touched Real Tech"
-              subtitle="learned by doing. breaking. fixing."
-              isVisible={workshopVisible}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {workshops.map((workshop, index) => (
-                <WorkshopCard key={workshop.name} workshop={workshop} index={index} isVisible={workshopVisible} />
-              ))}
-            </div>
-          </div>
-        </section>
+        </div>
 
         {/* Ending Line */}
         <div className="text-center py-20 px-6">
@@ -827,9 +840,7 @@ export default function CertificatesPage() {
             className="flex flex-col items-center p-8 rounded-3xl backdrop-blur-xl"
             style={{
               backgroundColor: "rgba(248, 248, 248, 0.025)",
-              borderWidth: "1px",
-              borderStyle: "solid",
-              borderColor: "rgba(248, 248, 248, 0.2)",
+              border: "1px solid rgba(248, 248, 248, 0.2)",
             }}
           >
             <div

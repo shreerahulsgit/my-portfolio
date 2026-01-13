@@ -39,9 +39,9 @@ const GlassButton = ({
         background: "rgba(255, 255, 255, 0.08)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(255, 255, 255, 0.15)",
+        border: isHovered ? "1px solid rgba(139, 92, 246, 0.5)" : "1px solid rgba(255, 255, 255, 0.15)",
         boxShadow: isHovered
-          ? "0 20px 60px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)"
+          ? "0 20px 60px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(139, 92, 246, 0.3)"
           : "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
       }}
     >
@@ -110,7 +110,7 @@ const GlassCard = ({
         className="absolute inset-x-0 top-0 h-px pointer-events-none"
         style={{
           background:
-            "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)",
+            "linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent)",
         }}
       />
       {children}
@@ -438,12 +438,12 @@ const ExperienceSection = () => {
             <span
               className="px-4 py-1 rounded-full text-sm font-medium text-white relative overflow-hidden"
               style={{
-                background: "rgba(255, 255, 255, 0.08)",
+                background: "rgba(139, 92, 246, 0.15)",
                 backdropFilter: "blur(20px)",
                 WebkitBackdropFilter: "blur(20px)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
+                border: "1px solid rgba(139, 92, 246, 0.4)",
                 boxShadow:
-                  "0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                  "0 4px 24px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(139, 92, 246, 0.2)",
               }}
             >
               <div
@@ -456,7 +456,7 @@ const ExperienceSection = () => {
               <span className="relative z-10">Quest Log</span>
             </span>
           </div>
-          <p className="text-lg md:text-xl text-gray-300">
+          <p className="text-lg md:text-xl" style={{ color: '#A78BFA' }}>
             side quests that shaped the main character...
           </p>
         </div>
@@ -669,7 +669,7 @@ const SkillsSection = () => {
               <span className="relative z-10">Core Technologies</span>
             </span>
           </div>
-          <p className="text-lg md:text-xl text-gray-300">
+          <p className="text-lg md:text-xl" style={{ color: '#A78BFA' }}>
             stuff I poke until it works...
           </p>
         </div>
@@ -753,7 +753,7 @@ const FeaturedProjects = () => {
               <span className="relative z-10">Highlights</span>
             </span>
           </div>
-          <p className="text-lg md:text-xl text-gray-300">
+          <p className="text-lg md:text-xl" style={{ color: '#A78BFA' }}>
             things I've built that didn't crash... mostly.
           </p>
         </div>

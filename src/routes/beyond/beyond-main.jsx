@@ -1,21 +1,74 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import LoadingOverlay from '../../lib/components/loading-overlay.jsx';
 import SplineMasking from '../../lib/components/spline-masking.jsx';
 import Spline from '@splinetool/react-spline';
 
+
+
+// ============================================
+// CARD REFLECTION COMPONENT
+// ============================================
+const CardReflection = ({ card, isFront, cardSize }) => {
+    if (!isFront) return null;
+    
+    return (
+        <div 
+            className="absolute pointer-events-none"
+            style={{
+                width: `${cardSize}px`,
+                height: `${cardSize * 0.4}px`,
+                bottom: `-${cardSize * 0.35}px`,
+                left: 0,
+                transform: 'scaleY(-1) perspective(500px) rotateX(30deg)',
+                transformOrigin: 'top center',
+            }}
+        >
+            <div 
+                className="w-full h-full rounded-3xl overflow-hidden"
+                style={{
+                    background: `url(${card.image}) center center / cover`,
+                    opacity: 0.25,
+                    filter: 'blur(3px)',
+                    maskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 100%)',
+                    WebkitMaskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 100%)',
+                }}
+            />
+        </div>
+    );
+};
+
+// ============================================
+// MAIN COMPONENT
+// ============================================
 const BeyondMain = () => {
     const navigate = useNavigate();
+    const containerRef = useRef(null);
     const [isVisible, setIsVisible] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAnimating, setIsAnimating] = useState(false);
     const [exitingIndex, setExitingIndex] = useState(null);
-    const [passedCards, setPassedCards] = useState([]); // Track cards that have been passed
+    const [passedCards, setPassedCards] = useState([]);
     const [splineLoaded, setSplineLoaded] = useState(false);
+    
+    // Mouse position for magnetic effect and parallax
+    const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
+    const [hoveredCard, setHoveredCard] = useState(null);
+    
+
 
     useEffect(() => {
         setIsVisible(true);
+    }, []);
+
+    // Track mouse position for effects
+    const handleMouseMove = useCallback((e) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        setMousePosition({ x, y });
     }, []);
 
     const cards = [
@@ -52,22 +105,35 @@ const BeyondMain = () => {
     ];
 
     const totalCards = cards.length;
-    const cardSize = 420; // Bigger square card size
+    const cardSize = 420;
 
-    // Calculate card position based on its relationship to current index
-    // Each card stays on its designated side (even index = right, odd index = left)
+    // Calculate magnetic tilt based on mouse position
+    const getMagneticTilt = (cardIndex) => {
+        if (hoveredCard !== cardIndex) return { rotateX: 0, rotateY: 0 };
+        
+        const tiltX = (mousePosition.y - 0.5) * -15;
+        const tiltY = (mousePosition.x - 0.5) * 15;
+        
+        return { rotateX: tiltX, rotateY: tiltY };
+    };
+
+    // Calculate parallax offset for UI elements
+    const getParallaxOffset = useCallback((intensity = 1) => {
+        const offsetX = (mousePosition.x - 0.5) * 20 * intensity;
+        const offsetY = (mousePosition.y - 0.5) * 10 * intensity;
+        return { x: offsetX, y: offsetY };
+    }, [mousePosition]);
+
     const getCardStyle = (cardIndex) => {
         const isPassed = passedCards.includes(cardIndex);
         const isCurrent = cardIndex === currentIndex;
         const isExiting = cardIndex === exitingIndex;
-        
-        // Card's fixed side based on its index (doesn't change during transitions)
         const isOnRight = cardIndex % 2 === 0;
-        
-        // Exiting card - animate out on its designated side
+        const magneticTilt = getMagneticTilt(cardIndex);
+
         if (isExiting) {
             return {
-                transform: 'translateZ(300px) scale(1.2)',
+                transform: `translateZ(300px) scale(1.2) rotateX(${magneticTilt.rotateX}deg) rotateY(${magneticTilt.rotateY}deg)`,
                 opacity: 0,
                 zIndex: 60,
                 ...(isOnRight 
@@ -78,8 +144,7 @@ const BeyondMain = () => {
                 pointerEvents: 'none',
             };
         }
-        
-        // Passed cards - hidden off-screen on their designated side
+
         if (isPassed) {
             return {
                 transform: 'translateZ(200px) scale(0.8)',
@@ -93,11 +158,10 @@ const BeyondMain = () => {
                 pointerEvents: 'none',
             };
         }
-        
-        // Current front card - on its designated side
+
         if (isCurrent) {
             return {
-                transform: 'translateZ(0) scale(1)',
+                transform: `translateZ(0) scale(1) rotateX(${magneticTilt.rotateX}deg) rotateY(${magneticTilt.rotateY}deg)`,
                 opacity: 1,
                 zIndex: 50,
                 ...(isOnRight 
@@ -108,12 +172,10 @@ const BeyondMain = () => {
                 pointerEvents: 'auto',
             };
         }
-        
-        // Back cards - calculate depth level based on distance from current
+
         const depthLevel = cardIndex - currentIndex;
-        
+
         if (depthLevel < 0) {
-            // Cards before current (should be passed, but just in case)
             return {
                 transform: 'translateZ(-500px) scale(0.3)',
                 opacity: 0,
@@ -126,14 +188,13 @@ const BeyondMain = () => {
                 pointerEvents: 'none',
             };
         }
-        
-        // Back cards in the stack - stay on their designated side
+
         const baseZ = -200 * depthLevel;
         const baseScale = 1 - depthLevel * 0.1;
         const baseOpacity = 0.8 - depthLevel * 0.12;
-        
+
         return {
-            transform: `translateZ(${baseZ}px) scale(${Math.max(baseScale, 0.5)})`,
+            transform: `translateZ(${baseZ}px) scale(${Math.max(baseScale, 0.5)}) rotateX(${magneticTilt.rotateX * 0.5}deg) rotateY(${magneticTilt.rotateY * 0.5}deg)`,
             opacity: Math.max(baseOpacity, 0.2),
             zIndex: 40 - depthLevel,
             ...(isOnRight 
@@ -145,60 +206,48 @@ const BeyondMain = () => {
         };
     };
 
-
-    // Navigate to previous card (travel backward - bring back the last passed card)
     const goToPrev = () => {
         if (isAnimating) return;
-        if (passedCards.length === 0) return; // No cards to go back to
-        
+        if (passedCards.length === 0) return;
+
         setIsAnimating(true);
-        
-        // Get the last passed card and bring it back
+
         const lastPassedCard = passedCards[passedCards.length - 1];
-        
-        // Update state - CSS handles the smooth animation
         setPassedCards(prev => prev.slice(0, -1));
         setCurrentIndex(lastPassedCard);
-        
-        // Wait for CSS transition to complete
+
         setTimeout(() => {
             setIsAnimating(false);
         }, 1800);
     };
 
-    // Navigate to next card (journey forward)
     const goToNext = () => {
         if (isAnimating) return;
-        if (currentIndex >= totalCards - 1) return; // No more cards to travel to
-        
+        if (currentIndex >= totalCards - 1) return;
+
         const nextIndex = currentIndex + 1;
         travelToNext(nextIndex);
     };
 
-    // Travel to the next card - current card vanishes
     const travelToNext = (nextIndex) => {
         if (isAnimating) return;
 
         setIsAnimating(true);
         setExitingIndex(currentIndex);
 
-        // Update state - CSS handles smooth animation
         setPassedCards(prev => [...prev, currentIndex]);
         setCurrentIndex(nextIndex);
-        
-        // Clear exiting state after animation completes
+
         setTimeout(() => {
             setExitingIndex(null);
             setIsAnimating(false);
         }, 1800);
     };
 
-    // Handle clicking the front card - navigate to its page
     const handleFrontCardClick = () => {
         navigate(cards[currentIndex].link);
     };
 
-    // Handle clicking a back card - travel to it
     const handleBackCardClick = (clickedIndex) => {
         if (isAnimating || clickedIndex <= currentIndex) return;
         if (passedCards.includes(clickedIndex)) return;
@@ -208,8 +257,15 @@ const BeyondMain = () => {
     const isLastCard = currentIndex === totalCards - 1;
     const isFirstCard = passedCards.length === 0;
 
+    const parallax = getParallaxOffset();
+
     return (
-        <div className="h-screen text-white overflow-hidden relative" style={{ perspective: '1400px' }}>
+        <div 
+            ref={containerRef}
+            className="h-screen text-white overflow-hidden relative" 
+            style={{ perspective: '1400px' }}
+            onMouseMove={handleMouseMove}
+        >
             {/* Spline Background */}
             <div className="absolute inset-0">
                 <Spline
@@ -220,11 +276,18 @@ const BeyondMain = () => {
                 <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            {/* Header Section */}
+
+
+            {/* Header Section with Parallax */}
             <div 
                 className={`absolute top-0 left-0 right-0 z-30 pt-8 flex flex-col items-center text-center transition-all duration-1000 ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'
                 }`}
+                style={{
+                    transform: isVisible 
+                        ? `translate(${parallax.x * -0.5}px, ${parallax.y * -0.5}px)` 
+                        : 'translateY(-32px)',
+                }}
             >
                 <div className="flex items-center gap-2 mb-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
@@ -238,7 +301,7 @@ const BeyondMain = () => {
                 </p>
             </div>
 
-            {/* Cards Container - Bottom Center */}
+            {/* Cards Container */}
             <div 
                 className="absolute inset-0 flex items-end justify-center pb-32"
                 style={{ transformStyle: 'preserve-3d' }}
@@ -250,12 +313,13 @@ const BeyondMain = () => {
                     return (
                         <div
                             key={index}
-                            className={`absolute cursor-pointer`}
+                            className="absolute cursor-pointer"
                             style={{
                                 width: `${cardSize}px`,
                                 height: `${cardSize}px`,
                                 ...style,
                                 transition: 'all 1.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transformStyle: 'preserve-3d',
                             }}
                             onClick={() => {
                                 if (isFront && !isAnimating) {
@@ -264,7 +328,12 @@ const BeyondMain = () => {
                                     handleBackCardClick(index);
                                 }
                             }}
+                            onMouseEnter={() => setHoveredCard(index)}
+                            onMouseLeave={() => setHoveredCard(null)}
                         >
+                            {/* Card Reflection */}
+                            <CardReflection card={card} isFront={isFront} cardSize={cardSize} />
+
                             <div 
                                 className={`relative w-full h-full rounded-3xl overflow-hidden border transition-all duration-500 ${
                                     isFront 
@@ -273,21 +342,32 @@ const BeyondMain = () => {
                                 }`}
                                 style={{
                                     boxShadow: isFront 
-                                        ? '0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 100px rgba(255,255,255,0.1)'
-                                        : '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
+                                        ? '0 30px 60px -20px rgba(0, 0, 0, 0.6), 0 0 40px rgba(255,255,255,0.05)'
+                                        : '0 15px 30px -10px rgba(0, 0, 0, 0.4)',
                                 }}
                             >
                                 <img
                                     src={card.image}
                                     alt={card.title}
-                                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${
+                                    className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 ${
                                         isFront ? 'hover:scale-110' : ''
                                     }`}
                                 />
-                                
+
                                 {/* Gradient overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                                
+
+                                {/* Shimmer effect on front card */}
+                                {isFront && (
+                                    <div 
+                                        className="absolute inset-0 opacity-30 pointer-events-none"
+                                        style={{
+                                            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)',
+                                            animation: 'shimmer 3s ease-in-out infinite',
+                                        }}
+                                    />
+                                )}
+
                                 {/* Dark overlay for back cards */}
                                 {!isFront && (
                                     <div className="absolute inset-0 bg-black/40 transition-opacity duration-300 hover:opacity-20" />
@@ -336,6 +416,9 @@ const BeyondMain = () => {
                         onClick={goToPrev}
                         disabled={isAnimating}
                         className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed group"
+                        style={{
+                            boxShadow: '0 0 30px rgba(255,255,255,0.1)',
+                        }}
                     >
                         <ChevronLeft className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
                     </button>
@@ -348,24 +431,79 @@ const BeyondMain = () => {
                         onClick={goToNext}
                         disabled={isAnimating}
                         className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed group"
+                        style={{
+                            boxShadow: '0 0 30px rgba(255,255,255,0.1)',
+                        }}
                     >
                         <ChevronRight className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
                     </button>
                 </div>
             )}
 
-            {/* Bottom Quote */}
+            {/* Bottom Quote with Parallax */}
             <div
-                className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-1000 delay-700 ${
+                className={`absolute bottom-8 left-1/2 z-30 transition-all duration-1000 delay-700 ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
+                style={{
+                    transform: `translateX(-50%) translate(${parallax.x}px, ${parallax.y}px)`,
+                }}
             >
                 <p className="text-white/60 text-sm italic text-center font-medium">
                     "Every story has a rhythm — this is mine."
                 </p>
             </div>
 
-            <style jsx>{`
+            {/* CSS Animations */}
+            <style>{`
+                @keyframes floatParticle {
+                    0%, 100% {
+                        transform: translate(0, 0) rotate(0deg);
+                        opacity: var(--opacity, 0.3);
+                    }
+                    25% {
+                        transform: translate(10px, -20px) rotate(90deg);
+                    }
+                    50% {
+                        transform: translate(-5px, -40px) rotate(180deg);
+                        opacity: calc(var(--opacity, 0.3) * 1.5);
+                    }
+                    75% {
+                        transform: translate(-15px, -20px) rotate(270deg);
+                    }
+                }
+
+                @keyframes burstParticle {
+                    0% {
+                        transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateX(0);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateX(var(--burst-distance));
+                        opacity: 0;
+                    }
+                }
+
+                @keyframes pulseGlow {
+                    0%, 100% {
+                        opacity: 0.6;
+                        transform: scale(1);
+                    }
+                    50% {
+                        opacity: 1;
+                        transform: scale(1.1);
+                    }
+                }
+
+                @keyframes shimmer {
+                    0% {
+                        transform: translateX(-100%);
+                    }
+                    50%, 100% {
+                        transform: translateX(100%);
+                    }
+                }
+
                 @keyframes zoomOut {
                     0% {
                         transform: translateZ(0) scale(1);
@@ -388,4 +526,3 @@ const BeyondMain = () => {
 };
 
 export default BeyondMain;
-

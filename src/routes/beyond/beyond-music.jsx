@@ -1,735 +1,653 @@
-import { useState, useEffect, useRef } from 'react';
-import { Music, Headphones } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import CircularGallery from '../../lib/components/circular-gallery';
-import ChromaGrid from '../../lib/components/chroma-grid';
 
-const BackgroundMusic = () => {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(0.7);
-    const audioRef = useRef(null);
-    const audioSrc = '/mp3/golden-brown-slowed.mp3';
+// ============================================
+// STARFIELD BACKGROUND
+// ============================================
+const Starfield = () => {
+  const stars = useMemo(() => Array.from({ length: 150 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 0.5,
+    opacity: Math.random() * 0.7 + 0.3,
+    twinkleDelay: Math.random() * 5,
+  })), []);
 
-    useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
-        const updateTime = () => setCurrentTime(audio.currentTime);
-        const updateDuration = () => {
-            if (!isNaN(audio.duration) && isFinite(audio.duration)) {
-                setDuration(audio.duration);
-            }
-        };
-        audio.addEventListener('timeupdate', updateTime);
-        audio.addEventListener('loadedmetadata', updateDuration);
-        return () => {
-            audio.removeEventListener('timeupdate', updateTime);
-            audio.removeEventListener('loadedmetadata', updateDuration);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.volume = volume;
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      <div style={{ position: "absolute", inset: 0, background: "#000000" }} />
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            background: "white",
+            opacity: star.opacity,
+            boxShadow: `0 0 ${star.size * 2}px rgba(255,255,255,${star.opacity})`,
+            animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${star.twinkleDelay}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
         }
-    }, [volume]);
-
-    const togglePlay = () => {
-        if (audioRef.current) {
-            if (isPlaying) {
-                audioRef.current.pause();
-            } else {
-                audioRef.current.play();
-            }
-            setIsPlaying(!isPlaying);
-        }
-    };
-
-    const handleSeek = (e) => {
-        const newTime = parseFloat(e.target.value);
-        setCurrentTime(newTime);
-        if (audioRef.current) {
-            audioRef.current.currentTime = newTime;
-        }
-    };
-
-    const handleVolumeChange = (e) => {
-        const newVolume = parseFloat(e.target.value);
-        setVolume(newVolume);
-    };
-
-    const skipForward = () => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = Math.min(
-                audioRef.current.currentTime + 15,
-                duration
-            );
-        }
-    };
-
-    const skipBackward = () => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = Math.max(
-                audioRef.current.currentTime - 15,
-                0
-            );
-        }
-    };
-
-    const formatTime = (time) => {
-        if (isNaN(time)) return '0:00';
-        const minutes = Math.floor(time / 60);
-        const seconds = Math.floor(time % 60);
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    const progressPercent = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
-
-    return (
-        <div className="bg-black flex items-center justify-center p-16 pb-20">
-            {/* Glassmorphic Player Card - Horizontal Layout */}
-            <div className="relative w-full max-w-2xl">
-                {/* Neon Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/40 via-purple-500/40 to-pink-500/40 rounded-3xl blur-2xl opacity-60"></div>
-                {/* Glass Card */}
-                <div className="relative bg-white/10 backdrop-blur-2xl rounded-3xl p-6 border border-white/20 shadow-2xl">
-                    {/* Reflection Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent rounded-3xl pointer-events-none"></div>
-                    <div className="relative z-10 flex gap-6">
-                        {/* Left: Album Art */}
-                        <div className="flex-shrink-0">
-                            <div className="w-48 h-48 rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-xl relative group">
-                                <img
-                                    src="https://i.scdn.co/image/ab67616d00001e022ff8e7ddcedf9076522e8cd7"
-                                    alt="Album Cover"
-                                    className={`w-full h-full object-cover transition-all duration-700 ${
-                                        isPlaying
-                                            ? 'scale-110 brightness-110'
-                                            : 'scale-100'
-                                    }`}
-                                />
-                                {/* Overlay Glow */}
-                                {isPlaying && (
-                                    <div className="absolute inset-0 bg-gradient-to-t from-purple-500/30 to-transparent animate-pulse"></div>
-                                )}
-                            </div>
-                        </div>
-                        {/* Right: Controls Section */}
-                        <div className="flex-1 flex flex-col justify-between min-w-0">
-                            {/* Top: Song Info */}
-                            <div className="mb-4">
-                                <div className="flex items-start justify-between mb-1">
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="text-xl font-bold text-white truncate mb-1">
-                                            Golden Brown - Slowed Down Version
-                                        </h3>
-                                        <p className="text-sm text-gray-300 truncate">
-                                            The Stranglers — Golden Brown
-                                        </p>
-                                    </div>
-                                    {/* AirPlay Icon */}
-                                    <button className="ml-3 text-gray-400 hover:text-white transition-colors p-1 hover:scale-110 transform duration-200">
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M6 22h12l-6-6-6 6zM21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v-2H3V5h18v12h-4v2h4c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                {/* Time Progress */}
-                                <div className="flex items-center gap-3 text-xs text-gray-400 mb-2">
-                                    <span className="tabular-nums">
-                                        {formatTime(currentTime)}
-                                    </span>
-                                    <div className="flex-1 relative h-1 bg-white/20 rounded-full overflow-hidden group cursor-pointer">
-                                        {/* Progress Fill */}
-                                        <div
-                                            className="absolute inset-y-0 left-0 bg-white rounded-full transition-all duration-100"
-                                            style={{
-                                                width: `${progressPercent}%`,
-                                            }}
-                                        ></div>
-                                        {/* Slider Input */}
-                                            <input
-                                            type="range"
-                                            min="0"
-                                                max={duration || 0}
-                                            value={currentTime}
-                                            onChange={handleSeek}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        />
-                                    </div>
-                                    <span className="tabular-nums">
-                                        {formatTime(duration)}
-                                    </span>
-                                </div>
-                            </div>
-                            {/* Middle: Playback Controls */}
-                            <div className="flex items-center justify-center gap-6 mb-4">
-                                {/* Previous */}
-                                <button
-                                    onClick={skipBackward}
-                                    className="text-white/70 hover:text-white transition-all hover:scale-110 active:scale-95 duration-200"
-                                >
-                                    <svg
-                                        className="w-8 h-8"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
-                                    </svg>
-                                </button>
-                                {/* Play/Pause */}
-                                <button
-                                    onClick={togglePlay}
-                                    className="w-14 h-14 rounded-full bg-white/90 hover:bg-white backdrop-blur-xl hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center shadow-lg group"
-                                >
-                                    {isPlaying ? (
-                                        <svg
-                                            className="w-6 h-6 text-gray-900"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                                        </svg>
-                                    ) : (
-                                        <svg
-                                            className="w-6 h-6 text-gray-900 ml-0.5"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M8 5v14l11-7z" />
-                                        </svg>
-                                    )}
-                                </button>
-                                {/* Next */}
-                                <button
-                                    onClick={skipForward}
-                                    className="text-white/70 hover:text-white transition-all hover:scale-110 active:scale-95 duration-200"
-                                >
-                                    <svg
-                                        className="w-8 h-8"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {/* Bottom: Volume Control */}
-                            <div className="flex items-center gap-3">
-                                {/* Volume Icon */}
-                                <button className="text-gray-400 hover:text-white transition-colors">
-                                    {volume === 0 ? (
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                                        </svg>
-                                    ) : volume < 0.5 ? (
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                                        </svg>
-                                    ) : (
-                                        <svg
-                                            className="w-5 h-5"
-                                            fill="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-                                        </svg>
-                                    )}
-                                </button>
-                                {/* Volume Slider */}
-                                <div className="flex-1 relative h-1 bg-white/20 rounded-full overflow-hidden group cursor-pointer max-w-32">
-                                    {/* Volume Fill */}
-                                    <div
-                                        className="absolute inset-y-0 left-0 bg-white/70 rounded-full transition-all duration-100"
-                                        style={{ width: `${volume * 100}%` }}
-                                    ></div>
-                                    {/* Slider Input */}
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="1"
-                                        step="0.01"
-                                        value={volume}
-                                        onChange={handleVolumeChange}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {/* Hidden Audio Element */}
-            <audio
-                ref={audioRef}
-                src={audioSrc}
-                onEnded={() => setIsPlaying(false)}
-                preload="auto"
-                onLoadedMetadata={() => {
-                    const audio = audioRef.current;
-                    if (audio && !isNaN(audio.duration) && isFinite(audio.duration)) {
-                        setDuration(audio.duration);
-                    }
-                }}
-            />
-        </div>
-    );
+      `}</style>
+    </div>
+  );
 };
 
-const MusicPage = () => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isAutoPlay, setIsAutoPlay] = useState(true);
+// ============================================
+// LYRIC CLOUDS - BURST LIKE SMOKE
+// ============================================
+const LyricClouds = () => {
+  const lyrics = useMemo(() => [
+    "save your tears",
+    "look at the stars",
+    "one more time",
+    "shake it off",
+    "slow dancing",
+    "blinding lights",
+    "yellow",
+    "around the world",
+    "moonlight",
+    "lost in rhythm",
+    "hopeless place",
+    "just the way you are",
+  ], []);
 
-    const albums = [
-        {
-            title: 'After Hours',
-            artist: 'The Weeknd',
-            cover: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
-            spotify: 'https://open.spotify.com/album/4yP0hdKOZPNshxUOjY0cZj',
-            accent: 'from-purple-500 to-pink-500',
-        },
-        {
-            title: 'Parachutes',
-            artist: 'Coldplay',
-            cover: 'https://i.scdn.co/image/ab67616d0000b273df55e326ed144ab4f5cecf95',
-            spotify: 'https://open.spotify.com/album/6ZG5lRT77aJ3btmArcykra',
-            accent: 'from-blue-500 to-cyan-500',
-        },
-        {
-            title: 'Discovery',
-            artist: 'Daft Punk',
-            cover: 'https://i.scdn.co/image/ab67616d00001e022c25dad9f8fd54652f7ba5df',
-            spotify: 'https://open.spotify.com/album/2noRn2Aes5aoNVsU6iWThc',
-            accent: 'from-yellow-500 to-orange-500',
-        },
-        {
-            title: "1989 (Taylor's Version)",
-            artist: 'Taylor Swift',
-            cover: 'https://i.scdn.co/image/ab67616d0000b273904445d70d04eb24d6bb79ac',
-            spotify: 'https://open.spotify.com/album/64LU4c1nfjz1t4VnGhagcg',
-            accent: 'from-cyan-500 to-blue-500',
-        },
-        {
-            title: 'Nectar',
-            artist: 'Joji',
-            cover: 'https://i.scdn.co/image/ab67616d00001e02e0b60c608586d88252b8fbc0',
-            spotify: 'https://open.spotify.com/album/3lS1y25WAhcqJDATJK70Mq',
-            accent: 'from-purple-500 to-blue-500',
-        },
-    ];
+  const clouds = useMemo(() => lyrics.map((lyric, i) => ({
+    id: i,
+    text: lyric,
+    x: 5 + Math.random() * 85,
+    y: 10 + Math.random() * 75,
+    delay: i * 3,
+    duration: 8 + Math.random() * 6,
+    size: 16 + Math.random() * 12,
+    blur: 2 + Math.random() * 4,
+  })), [lyrics]);
 
-    const items = [
-        {
-            image: 'https://i.pravatar.cc/300?img=1',
-            title: 'Sarah Johnson',
-            subtitle: 'Frontend Developer',
-            handle: '@sarahjohnson',
-            borderColor: '#3B82F6',
-            gradient: 'linear-gradient(145deg, #3B82F6, #000)',
-            url: 'https://github.com/sarahjohnson',
-        },
-        {
-            image: 'https://i.pravatar.cc/300?img=2',
-            title: 'Mike Chen',
-            subtitle: 'Backend Engineer',
-            handle: '@mikechen',
-            borderColor: '#10B981',
-            gradient: 'linear-gradient(180deg, #10B981, #000)',
-            url: 'https://linkedin.com/in/mikechen',
-        },
-    ];
-
-    useEffect(() => {
-        if (!isAutoPlay) return;
-
-        const interval = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % albums.length);
-        }, 4000);
-
-        return () => clearInterval(interval);
-    }, [isAutoPlay, albums.length]);
-
-    const handleAlbumClick = (spotify) => {
-        window.open(spotify, '_blank', 'noopener,noreferrer');
-    };
-
-    const goToSlide = (index) => {
-        setCurrentIndex(index);
-        setIsAutoPlay(false);
-    };
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br bg-black text-white overflow-hidden">
-            {/* Animated Background Elements */}
-            <div className="fixed inset-0 opacity-5">
-                {[...Array(20)].map((_, i) => (
-                    <div
-                        key={i}
-                        className="absolute text-4xl animate-pulse"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            animationDuration: `${3 + Math.random() * 4}s`,
-                        }}
-                    >
-                        ♪
-                    </div>
-                ))}
-            </div>
-
-            {/* Header Section */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 pt-16">
-                <div className="text-center mb-12 animate-fade-in">
-                    <div className="flex items-center justify-center gap-3 mb-4">
-                        <Music className="w-8 h-8 text-purple-400" />
-                        <h1 className="text-5xl font-thin tracking-wider">
-                            My Music Universe
-                        </h1>
-                    </div>
-                    <p className="text-gray-400 text-lg font-light">
-                        Where sound becomes memory
-                    </p>
-                </div>
-            </div>
-
-            {/* Background Music Player */}
-            <BackgroundMusic />
-
-            {/* CircularGallery Section */}
-            <div className="relative z-10 w-full mb-32 bg-black p-8">
-                <h2 className="text-3xl font-thin mb-8 flex items-center gap-3 max-w-7xl mx-auto px-6">
-                    <Headphones className="w-7 h-7 text-blue-400" />
-                    Artists I Love
-                </h2>
-                <div
-                    style={{
-                        height: '500px',
-                        position: 'relative',
-                        width: '100%',
-                    }}
-                >
-                    <CircularGallery
-                        bend={4}
-                        textColor="#ffffff"
-                        borderRadius={0.1}
-                        scrollEase={0.03}
-                    />
-                </div>
-            </div>
-
-            {/* Favorite Albums Section */}
-            <div className="relative z-10 w-full bg-black p-8">
-                <div className="max-w-7xl mx-auto">
-                    {/* Header */}
-                    <div className="text-center mb-16">
-                        <h2 className="text-5xl font-bold text-white mb-4 tracking-tight">
-                            My Favorite Albums
-                        </h2>
-                        <div className="h-1 w-24 mx-auto bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
-                    </div>
-
-                    {/* Carousel Container */}
-                    <div className="relative">
-                        {/* Main Display - Triangle Layout */}
-                        <div className="flex items-center justify-center mb-12 min-h-[600px] relative overflow-hidden">
-                            {/* Render all albums with smooth positioning */}
-                            {albums.map((album, albumIdx) => {
-                                // Calculate the relative position of this album from the current center
-                                let relativePosition = albumIdx - currentIndex;
-
-                                // Normalize the position to be within [-2, 2] range for display
-                                if (relativePosition > 2) {
-                                    relativePosition -= albums.length;
-                                } else if (relativePosition < -2) {
-                                    relativePosition += albums.length;
-                                }
-
-                                const isVisible =
-                                    Math.abs(relativePosition) <= 2;
-                                const isCenter = relativePosition === 0;
-                                const isInner =
-                                    Math.abs(relativePosition) === 1;
-                                const isOuter =
-                                    Math.abs(relativePosition) === 2;
-
-                                if (!isVisible) return null;
-
-                                return (
-                                    <div
-                                        key={albumIdx}
-                                        className={`absolute cursor-pointer ${
-                                            isCenter
-                                                ? 'z-30'
-                                                : isInner
-                                                  ? 'z-20'
-                                                  : 'z-10'
-                                        }`}
-                                        style={{
-                                            left: `${50 + relativePosition * 22}%`,
-                                            top: isCenter
-                                                ? '5%'
-                                                : isInner
-                                                  ? '20%'
-                                                  : '30%',
-                                            transform: `translateX(-50%) translateY(0px) scale(${
-                                                isCenter
-                                                    ? 1
-                                                    : isInner
-                                                      ? 0.8
-                                                      : 0.65
-                                            })`,
-                                            filter: isCenter
-                                                ? 'none'
-                                                : `blur(${isInner ? '1.5px' : '3px'})`,
-                                            opacity: isCenter
-                                                ? 1
-                                                : isInner
-                                                  ? 0.85
-                                                  : 0.7,
-                                            transition:
-                                                'all 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                                            willChange:
-                                                'transform, opacity, filter, left, top',
-                                        }}
-                                        onClick={() => {
-                                            if (!isCenter) {
-                                                setCurrentIndex(albumIdx);
-                                                setIsAutoPlay(false);
-                                            } else {
-                                                handleAlbumClick(album.spotify);
-                                            }
-                                        }}
-                                    >
-                                        <div className="group relative transform transition-all duration-1200 ease-out hover:scale-105">
-                                            {/* Neon Glow Background */}
-                                            <div
-                                                className={`absolute -inset-1 bg-gradient-to-r ${album.accent} rounded-2xl blur-xl transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94) opacity-0 group-hover:!opacity-70`}
-                                                style={{
-                                                    opacity: isCenter
-                                                        ? 0.3
-                                                        : undefined,
-                                                }}
-                                            ></div>
-
-                                            {/* Glass Card */}
-                                            <div
-                                                className="relative rounded-2xl border shadow-2xl transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94) group-hover:bg-white/8 group-hover:border-white/20"
-                                                style={{
-                                                    width: '300px',
-                                                    maxWidth: '300px',
-                                                    backgroundColor: isCenter
-                                                        ? 'rgba(255, 255, 255, 0.05)'
-                                                        : 'rgba(255, 255, 255, 0.03)',
-                                                    backdropFilter: isCenter
-                                                        ? 'blur(40px)'
-                                                        : 'blur(20px)',
-                                                    padding: isCenter
-                                                        ? '24px'
-                                                        : '16px',
-                                                    borderColor: isCenter
-                                                        ? 'rgba(255, 255, 255, 0.1)'
-                                                        : 'rgba(255, 255, 255, 0.05)',
-                                                    willChange:
-                                                        'background-color, border-color, padding',
-                                                }}
-                                            >
-                                                {/* Reflection Overlay */}
-                                                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent rounded-2xl opacity-0 group-hover:!opacity-30 transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94)"></div>
-
-                                                {/* Album Cover */}
-                                                <div
-                                                    className="relative overflow-hidden rounded-xl shadow-2xl transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-                                                    style={{
-                                                        marginBottom: isCenter
-                                                            ? '16px'
-                                                            : '12px',
-                                                    }}
-                                                >
-                                                    <img
-                                                        src={album.cover}
-                                                        alt={`${album.title} by ${album.artist}`}
-                                                        className="w-full aspect-square object-cover transform transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94) group-hover:scale-110"
-                                                        style={{
-                                                            willChange:
-                                                                'transform',
-                                                        }}
-                                                    />
-                                                    {/* Inner Glow on Hover */}
-                                                    <div
-                                                        className={`absolute inset-0 bg-gradient-to-t ${album.accent} opacity-0 group-hover:!opacity-30 transition-all duration-1200 cubic-bezier(0.25, 0.46, 0.45, 0.94)`}
-                                                    ></div>
-                                                </div>
-
-                                                {/* Album Info - Full details only for center */}
-                                                <div className="relative z-10">
-                                                    <h3
-                                                        className={`font-bold text-white mb-2 tracking-tight ${
-                                                            isCenter
-                                                                ? 'text-2xl'
-                                                                : isInner
-                                                                  ? 'text-lg'
-                                                                  : 'text-base'
-                                                        }`}
-                                                    >
-                                                        {album.title}
-                                                    </h3>
-                                                    <p
-                                                        className={`text-gray-400 ${
-                                                            isCenter
-                                                                ? 'text-lg'
-                                                                : isInner
-                                                                  ? 'text-base'
-                                                                  : 'text-sm'
-                                                        }`}
-                                                    >
-                                                        {album.artist}
-                                                    </p>
-
-                                                    {/* Spotify Icon - Only for center */}
-                                                    {isCenter && (
-                                                        <div className="mt-4 flex items-center gap-2 text-gray-400 group-hover:text-green-400 transition-colors duration-300">
-                                                            <svg
-                                                                className="w-5 h-5"
-                                                                fill="currentColor"
-                                                                viewBox="0 0 24 24"
-                                                            >
-                                                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                                                            </svg>
-                                                            <span className="text-sm font-medium">
-                                                                Play on Spotify
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Navigation Dots */}
-                        <div className="flex justify-center gap-3">
-                            {albums.map((_, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => goToSlide(idx)}
-                                    className={`h-2 rounded-full transition-all duration-300 ${
-                                        idx === currentIndex
-                                            ? 'w-8 bg-gradient-to-r from-purple-500 to-blue-500'
-                                            : 'w-2 bg-white/30 hover:bg-white/50'
-                                    }`}
-                                    aria-label={`Go to album ${idx + 1}`}
-                                />
-                            ))}
-                        </div>
-
-                        {/* Arrow Navigation */}
-                        <button
-                            onClick={() => {
-                                const newIndex =
-                                    (currentIndex - 1 + albums.length) %
-                                    albums.length;
-                                setCurrentIndex(newIndex);
-                                setIsAutoPlay(false);
-                            }}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-40 bg-white/10 backdrop-blur-xl border border-white/20 text-white p-4 rounded-full hover:bg-white/20 hover:border-white/40 transition-all duration-500 ease-out hover:scale-110 active:scale-95 shadow-2xl"
-                            aria-label="Previous album"
-                        >
-                            <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M15 19l-7-7 7-7"
-                                />
-                            </svg>
-                        </button>
-
-                        <button
-                            onClick={() => {
-                                const newIndex =
-                                    (currentIndex + 1) % albums.length;
-                                setCurrentIndex(newIndex);
-                                setIsAutoPlay(false);
-                            }}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 z-40 bg-white/10 backdrop-blur-xl border border-white/20 text-white p-4 rounded-full hover:bg-white/20 hover:border-white/40 transition-all duration-500 ease-out hover:scale-110 active:scale-95 shadow-2xl"
-                            aria-label="Next album"
-                        >
-                            <svg
-                                className="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M9 5l7 7-7 7"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* ChromaGrid Section */}
-            <div className="relative z-10 w-full bg-black p-8 pb-28">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-5xl font-bold text-white mb-4 tracking-tight">
-                            Connect With Artists
-                        </h2>
-                        <div className="h-1 w-24 mx-auto bg-gradient-to-r from-blue-500 to-green-500 rounded-full"></div>
-                    </div>
-                    <div style={{ height: '850px', position: 'relative' }}>
-                        <ChromaGrid
-                            radius={300}
-                            damping={0.45}
-                            fadeOut={0.6}
-                            ease="power3.out"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <style>{`
-                @keyframes fade-in {
-                    from {
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                .animate-fade-in {
-                    animation: fade-in 1s ease-out;
-                }
-            `}</style>
+  return (
+    <div className="fixed inset-0 z-2 pointer-events-none overflow-hidden">
+      {clouds.map((cloud) => (
+        <div
+          key={cloud.id}
+          className="absolute font-extralight tracking-widest"
+          style={{
+            left: `${cloud.x}%`,
+            top: `${cloud.y}%`,
+            fontSize: `${cloud.size}px`,
+            color: 'rgba(255, 255, 255, 0.4)',
+            textShadow: `0 0 ${cloud.blur * 8}px rgba(139, 92, 246, 0.6), 0 0 ${cloud.blur * 16}px rgba(59, 130, 246, 0.4)`,
+            filter: `blur(${cloud.blur * 0.3}px)`,
+            animation: `cloudBurst ${cloud.duration}s ease-in-out infinite`,
+            animationDelay: `${cloud.delay}s`,
+          }}
+        >
+          {cloud.text}
         </div>
-    );
+      ))}
+      <style>{`
+        @keyframes cloudBurst {
+          0% { opacity: 0; transform: scale(0.5) translateY(20px); filter: blur(8px); }
+          20% { opacity: 0.5; transform: scale(1.1) translateY(-5px); filter: blur(2px); }
+          40% { opacity: 0.4; transform: scale(1) translateY(0); filter: blur(1px); }
+          60% { opacity: 0.35; transform: scale(1.05) translateY(-3px); filter: blur(1.5px); }
+          80% { opacity: 0.3; transform: scale(0.95) translateY(5px); filter: blur(3px); }
+          100% { opacity: 0; transform: scale(0.6) translateY(15px); filter: blur(6px); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// ============================================
+// AUDIO VISUALIZER - NEBULA WAVE
+// ============================================
+const AudioVisualizer = ({ isPlaying }) => {
+  const [particles, setParticles] = useState([]);
+  const [wave, setWave] = useState(0);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setParticles([]);
+      return;
+    }
+
+    // Generate flowing particles
+    const interval = setInterval(() => {
+      setWave(prev => (prev + 0.1) % (Math.PI * 2));
+      setParticles(Array.from({ length: 24 }, (_, i) => {
+        const angle = (i / 24) * Math.PI * 2;
+        const wobble = Math.sin(wave + i * 0.5) * 15;
+        const radius = 70 + wobble + Math.random() * 20;
+        return {
+          id: i,
+          x: Math.cos(angle) * radius,
+          y: Math.sin(angle) * radius,
+          scale: 0.5 + Math.random() * 1,
+          opacity: 0.3 + Math.random() * 0.5,
+          hue: 250 + i * 5,
+        };
+      }));
+    }, 60);
+
+    return () => clearInterval(interval);
+  }, [isPlaying, wave]);
+
+  return (
+    <div className="relative flex items-center justify-center h-48">
+      {/* Nebula Core */}
+      <div 
+        className="absolute w-32 h-32 rounded-full transition-all duration-700"
+        style={{
+          background: isPlaying 
+            ? 'radial-gradient(circle, rgba(139, 92, 246, 0.4) 0%, rgba(59, 130, 246, 0.2) 50%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(100, 100, 100, 0.1) 0%, transparent 70%)',
+          boxShadow: isPlaying 
+            ? '0 0 60px rgba(139, 92, 246, 0.5), 0 0 100px rgba(59, 130, 246, 0.3)'
+            : 'none',
+          animation: isPlaying ? 'nebulaPulse 3s ease-in-out infinite' : 'none',
+        }}
+      />
+
+      {/* Floating Particles */}
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="absolute rounded-full transition-all duration-150"
+          style={{
+            width: `${8 * p.scale}px`,
+            height: `${8 * p.scale}px`,
+            left: `calc(50% + ${p.x}px)`,
+            top: `calc(50% + ${p.y}px)`,
+            transform: 'translate(-50%, -50%)',
+            background: `hsla(${p.hue}, 80%, 60%, ${p.opacity})`,
+            boxShadow: `0 0 ${12 * p.scale}px hsla(${p.hue}, 80%, 60%, 0.6)`,
+          }}
+        />
+      ))}
+
+      {/* Orbit Rings */}
+      {[1, 2, 3].map((ring) => (
+        <div
+          key={ring}
+          className="absolute rounded-full border transition-all duration-500"
+          style={{
+            width: `${60 + ring * 40}px`,
+            height: `${60 + ring * 40}px`,
+            borderColor: isPlaying 
+              ? `rgba(139, 92, 246, ${0.3 - ring * 0.08})` 
+              : 'rgba(100, 100, 100, 0.1)',
+            animation: isPlaying ? `orbitSpin ${8 + ring * 4}s linear infinite ${ring % 2 ? '' : 'reverse'}` : 'none',
+          }}
+        />
+      ))}
+
+      <style>{`
+        @keyframes nebulaPulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.15); opacity: 1; }
+        }
+        @keyframes orbitSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// ============================================
+// VINYL RECORD PLAYER
+// ============================================
+const VinylPlayer = ({ album, isPlaying, onTogglePlay, currentTime, duration, onSeek, volume, onVolumeChange }) => {
+  const [armPosition, setArmPosition] = useState(0);
+
+  useEffect(() => {
+    setArmPosition(isPlaying ? 25 : 0);
+  }, [isPlaying]);
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div className="relative flex flex-col items-center">
+      {/* Turntable Base */}
+      <div className="relative w-80 h-80 md:w-96 md:h-96">
+        {/* Outer Glow */}
+        <div 
+          className="absolute -inset-4 rounded-full blur-2xl transition-all duration-1000"
+          style={{
+            background: isPlaying 
+              ? `radial-gradient(circle, ${album?.accentColor || 'rgba(139, 92, 246, 0.3)'} 0%, transparent 70%)`
+              : 'transparent',
+            opacity: isPlaying ? 0.6 : 0,
+          }}
+        />
+
+        {/* Turntable Platter */}
+        <div 
+          className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-900 to-black border-4 border-gray-800"
+          style={{
+            boxShadow: 'inset 0 0 60px rgba(0,0,0,0.8), 0 20px 60px rgba(0,0,0,0.5)',
+          }}
+        />
+
+        {/* Vinyl Record */}
+        <div 
+          className="absolute inset-4 rounded-full overflow-hidden cursor-pointer"
+          onClick={onTogglePlay}
+          style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 50%, #1a1a1a 100%)',
+            animation: isPlaying ? 'spin 3s linear infinite' : 'none',
+            boxShadow: 'inset 0 0 30px rgba(0,0,0,0.8)',
+          }}
+        >
+          {/* Vinyl Grooves */}
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute rounded-full border border-gray-800/30"
+              style={{
+                inset: `${15 + i * 8}%`,
+              }}
+            />
+          ))}
+
+          {/* Album Art in Center */}
+          <div className="absolute inset-1/4 rounded-full overflow-hidden border-4 border-gray-900">
+            <img 
+              src={album?.cover || 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36'} 
+              alt="Album"
+              className="w-full h-full object-cover"
+            />
+            {/* Center Hole */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gray-900 border border-gray-700" />
+          </div>
+
+          {/* Vinyl Shine */}
+          <div 
+            className="absolute inset-0 rounded-full pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.05) 100%)',
+            }}
+          />
+        </div>
+
+        {/* Tonearm */}
+        <div 
+          className="absolute -right-8 top-4 w-32 h-4 origin-left transition-transform duration-1000"
+          style={{
+            transform: `rotate(${armPosition}deg)`,
+          }}
+        >
+          {/* Arm Base */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-700 border-2 border-gray-600" />
+          {/* Arm */}
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 w-24 h-1.5 bg-gradient-to-r from-gray-600 to-gray-400 rounded-full" />
+          {/* Headshell */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-3 bg-gray-500 rounded-sm transform rotate-45" />
+        </div>
+      </div>
+
+      {/* Controls Below */}
+      <div className="mt-8 w-full max-w-md space-y-4">
+        {/* Song Info */}
+        <div className="text-center">
+          <h3 className="text-xl font-bold text-white">{album?.title || 'Select an Album'}</h3>
+          <p className="text-gray-400">{album?.artist || ''}</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="flex items-center gap-3 text-xs text-gray-400">
+          <span className="tabular-nums w-10 text-right">{formatTime(currentTime)}</span>
+          <div className="flex-1 relative h-1.5 bg-white/10 rounded-full overflow-hidden cursor-pointer group">
+            <div
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={currentTime}
+              onChange={onSeek}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
+          <span className="tabular-nums w-10">{formatTime(duration)}</span>
+        </div>
+
+        {/* Play Controls */}
+        <div className="flex items-center justify-center gap-6">
+          <button
+            onClick={onTogglePlay}
+            className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 flex items-center justify-center transition-all hover:scale-105"
+          >
+            {isPlaying ? (
+              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+            ) : (
+              <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+        </div>
+
+        {/* Volume */}
+        <div className="flex items-center gap-3 justify-center">
+          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+          </svg>
+          <div className="w-24 relative h-1 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-white/50 rounded-full"
+              style={{ width: `${volume * 100}%` }}
+            />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={onVolumeChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// ============================================
+// MOOD GRADIENT OVERLAY
+// ============================================
+const MoodGradient = ({ accentColor }) => {
+  return (
+    <div 
+      className="fixed inset-0 z-1 pointer-events-none transition-all duration-2000"
+      style={{
+        background: `radial-gradient(ellipse at 30% 20%, ${accentColor || 'rgba(139, 92, 246, 0.15)'} 0%, transparent 50%),
+                     radial-gradient(ellipse at 70% 80%, ${accentColor || 'rgba(59, 130, 246, 0.1)'} 0%, transparent 50%)`,
+      }}
+    />
+  );
+};
+
+// ============================================
+// ALBUM CARD WITH REFLECTION
+// ============================================
+const AlbumCard = ({ album, isActive, onClick }) => {
+  return (
+    <div 
+      className={`relative cursor-pointer transition-all duration-500 ${isActive ? 'scale-110 z-20' : 'scale-100 opacity-70 hover:opacity-100'}`}
+      onClick={onClick}
+    >
+      {/* Glow */}
+      <div 
+        className={`absolute -inset-2 rounded-2xl blur-xl transition-all duration-500 bg-gradient-to-r ${album.accent}`}
+        style={{ opacity: isActive ? 0.4 : 0 }}
+      />
+
+      {/* Card */}
+      <div className="relative w-48 rounded-xl overflow-hidden bg-white/5 border border-white/10 backdrop-blur-xl">
+        {/* Vinyl Peek */}
+        <div 
+          className="absolute -right-6 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gray-900 border border-gray-800 transition-transform duration-500"
+          style={{
+            transform: isActive ? 'translateX(-10px)' : 'translateX(0)',
+          }}
+        />
+
+        {/* Album Art */}
+        <img 
+          src={album.cover} 
+          alt={album.title}
+          className="relative z-10 w-full aspect-square object-cover"
+        />
+
+        {/* Info */}
+        <div className="relative z-10 p-3 bg-black/50">
+          <h4 className="font-semibold text-white text-sm truncate">{album.title}</h4>
+          <p className="text-gray-400 text-xs truncate">{album.artist}</p>
+        </div>
+      </div>
+
+      {/* Reflection */}
+      <div 
+        className="w-full h-16 mt-2 rounded-xl overflow-hidden"
+        style={{
+          background: `url(${album.cover}) center top / cover`,
+          transform: 'scaleY(-1)',
+          opacity: 0.15,
+          filter: 'blur(4px)',
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)',
+        }}
+      />
+    </div>
+  );
+};
+
+// ============================================
+// MAIN MUSIC PAGE
+// ============================================
+const MusicPage = () => {
+  const [currentAlbumIndex, setCurrentAlbumIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const audioRef = useRef(null);
+
+  const albums = useMemo(() => [
+    {
+      title: 'After Hours',
+      artist: 'The Weeknd',
+      cover: 'https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36',
+      spotify: 'https://open.spotify.com/album/4yP0hdKOZPNshxUOjY0cZj',
+      accent: 'from-purple-500 to-pink-500',
+      accentColor: 'rgba(168, 85, 247, 0.2)',
+    },
+    {
+      title: 'Parachutes',
+      artist: 'Coldplay',
+      cover: 'https://i.scdn.co/image/ab67616d0000b273df55e326ed144ab4f5cecf95',
+      spotify: 'https://open.spotify.com/album/6ZG5lRT77aJ3btmArcykra',
+      accent: 'from-blue-500 to-cyan-500',
+      accentColor: 'rgba(59, 130, 246, 0.2)',
+    },
+    {
+      title: 'Discovery',
+      artist: 'Daft Punk',
+      cover: 'https://i.scdn.co/image/ab67616d00001e022c25dad9f8fd54652f7ba5df',
+      spotify: 'https://open.spotify.com/album/2noRn2Aes5aoNVsU6iWThc',
+      accent: 'from-yellow-500 to-orange-500',
+      accentColor: 'rgba(251, 191, 36, 0.2)',
+    },
+    {
+      title: "1989 (Taylor's Version)",
+      artist: 'Taylor Swift',
+      cover: 'https://i.scdn.co/image/ab67616d0000b273904445d70d04eb24d6bb79ac',
+      spotify: 'https://open.spotify.com/album/64LU4c1nfjz1t4VnGhagcg',
+      accent: 'from-cyan-500 to-blue-500',
+      accentColor: 'rgba(6, 182, 212, 0.2)',
+    },
+    {
+      title: 'Nectar',
+      artist: 'Joji',
+      cover: 'https://i.scdn.co/image/ab67616d00001e02e0b60c608586d88252b8fbc0',
+      spotify: 'https://open.spotify.com/album/3lS1y25WAhcqJDATJK70Mq',
+      accent: 'from-purple-500 to-blue-500',
+      accentColor: 'rgba(139, 92, 246, 0.2)',
+    },
+  ], []);
+
+  const currentAlbum = albums[currentAlbumIndex];
+
+  // Audio handling
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => {
+      if (!isNaN(audio.duration) && isFinite(audio.duration)) {
+        setDuration(audio.duration);
+      }
+    };
+    
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+    
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  const togglePlay = useCallback(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  }, [isPlaying]);
+
+  const handleSeek = useCallback((e) => {
+    const newTime = parseFloat(e.target.value);
+    setCurrentTime(newTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  }, []);
+
+  const handleVolumeChange = useCallback((e) => {
+    setVolume(parseFloat(e.target.value));
+  }, []);
+
+  return (
+    <div className="min-h-screen relative overflow-hidden text-white">
+      {/* Starfield */}
+      <Starfield />
+
+      {/* Mood Gradient */}
+      <MoodGradient accentColor={currentAlbum.accentColor} />
+
+      {/* Lyric Clouds */}
+      <LyricClouds />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section className="pt-20 pb-8 px-6 text-center">
+          <h1 className="text-5xl font-thin tracking-wider mb-4">My Music Universe</h1>
+          <p className="text-gray-400 text-lg font-light">
+            where sound becomes memory
+          </p>
+        </section>
+
+        {/* Vinyl Player Section */}
+        <section className="py-12 px-6 flex flex-col items-center">
+          {/* Audio Visualizer */}
+          <div className="mb-8 w-full max-w-md">
+            <AudioVisualizer isPlaying={isPlaying} />
+          </div>
+
+          {/* Vinyl Player */}
+          <VinylPlayer
+            album={currentAlbum}
+            isPlaying={isPlaying}
+            onTogglePlay={togglePlay}
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+            volume={volume}
+            onVolumeChange={handleVolumeChange}
+          />
+        </section>
+
+        {/* Album Selection */}
+        <section className="py-16 px-6">
+          <h2 className="text-2xl font-thin text-center mb-12 text-white/80">
+            select album
+          </h2>
+          <div className="flex flex-wrap justify-center gap-8">
+            {albums.map((album, idx) => (
+              <AlbumCard
+                key={album.title}
+                album={album}
+                isActive={idx === currentAlbumIndex}
+                onClick={() => setCurrentAlbumIndex(idx)}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* CircularGallery Section */}
+        <section className="py-16 px-6 bg-black/50">
+          <h2 className="text-3xl font-thin mb-8 text-white/80 max-w-7xl mx-auto">
+            artists I love
+          </h2>
+          <div style={{ height: '500px', position: 'relative', width: '100%' }}>
+            <CircularGallery
+              bend={4}
+              textColor="#ffffff"
+              borderRadius={0.1}
+              scrollEase={0.03}
+            />
+          </div>
+        </section>
+
+      </div>
+
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        src="/mp3/golden-brown-slowed.mp3"
+        onEnded={() => setIsPlaying(false)}
+        preload="auto"
+        onLoadedMetadata={() => {
+          if (audioRef.current && !isNaN(audioRef.current.duration)) {
+            setDuration(audioRef.current.duration);
+          }
+        }}
+      />
+    </div>
+  );
 };
 
 export default MusicPage;

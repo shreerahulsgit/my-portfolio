@@ -539,8 +539,11 @@ const DesktopHomePage = () => {
 // Main HomePage Component - switches between Mobile and Desktop
 const HomePage = () => {
   const [isMobile, setIsMobile] = useState(false);
-  const [showChargeUp, setShowChargeUp] = useState(true);
-  const [animationComplete, setAnimationComplete] = useState(false);
+  
+  // Check if animation was already shown this session
+  const hasSeenAnimation = sessionStorage.getItem('hasSeenChargeUp') === 'true';
+  const [showChargeUp, setShowChargeUp] = useState(!hasSeenAnimation);
+  const [animationComplete, setAnimationComplete] = useState(hasSeenAnimation);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -555,6 +558,8 @@ const HomePage = () => {
   const handleChargeUpComplete = () => {
     setShowChargeUp(false);
     setAnimationComplete(true);
+    // Remember that animation was shown
+    sessionStorage.setItem('hasSeenChargeUp', 'true');
   };
 
   return (

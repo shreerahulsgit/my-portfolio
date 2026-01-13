@@ -1,6 +1,154 @@
-import React, { useState, useEffect, useRef } from "react";
-import Spline from "@splinetool/react-spline";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Footer from "../../lib/components/footer.jsx";
+
+// ============================================
+// TYPEWRITER TEXT COMPONENT
+// ============================================
+const TypewriterText = ({ text, delay = 0, speed = 30 }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    if (displayedText.length < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayedText(text.slice(0, displayedText.length + 1));
+      }, speed);
+      return () => clearTimeout(timer);
+    }
+  }, [displayedText, text, speed, started]);
+
+  return (
+    <span>
+      {displayedText}
+      {displayedText.length < text.length && (
+        <span className="animate-pulse">|</span>
+      )}
+    </span>
+  );
+};
+
+// ============================================
+// STARFIELD BACKGROUND
+// ============================================
+const Starfield = () => {
+  const stars = useMemo(() => Array.from({ length: 150 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 0.5,
+    opacity: Math.random() * 0.7 + 0.3,
+    twinkleDelay: Math.random() * 5,
+  })), []);
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* Pure black background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#000000",
+        }}
+      />
+      {/* Stars */}
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            background: "white",
+            opacity: star.opacity,
+            boxShadow: `0 0 ${star.size * 2}px rgba(255,255,255,${star.opacity})`,
+            animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${star.twinkleDelay}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// ============================================
+// COFFEE STAIN COMPONENT
+// ============================================
+const CoffeeStains = () => {
+  const stains = [
+    { left: '5%', top: '60%', size: 80, opacity: 0.04, rotation: 15 },
+    { right: '10%', top: '40%', size: 60, opacity: 0.03, rotation: -20 },
+    { left: '70%', bottom: '20%', size: 100, opacity: 0.035, rotation: 45 },
+  ];
+
+  return (
+    <>
+      {stains.map((stain, i) => (
+        <div
+          key={i}
+          className="absolute pointer-events-none"
+          style={{
+            left: stain.left,
+            right: stain.right,
+            top: stain.top,
+            bottom: stain.bottom,
+            width: `${stain.size}px`,
+            height: `${stain.size}px`,
+            borderRadius: '50%',
+            border: `2px solid rgba(139, 90, 43, ${stain.opacity})`,
+            opacity: stain.opacity * 10,
+            transform: `rotate(${stain.rotation}deg)`,
+            boxShadow: `inset 0 0 10px rgba(139, 90, 43, ${stain.opacity * 0.5})`,
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
+// ============================================
+// INK SPLATTER COMPONENT
+// ============================================
+const InkSplatters = () => {
+  const splatters = [
+    { left: '15%', top: '25%', size: 6, opacity: 0.15 },
+    { left: '16%', top: '26%', size: 3, opacity: 0.1 },
+    { right: '20%', top: '55%', size: 4, opacity: 0.12 },
+    { left: '80%', top: '35%', size: 5, opacity: 0.1 },
+  ];
+
+  return (
+    <>
+      {splatters.map((splatter, i) => (
+        <div
+          key={i}
+          className="absolute pointer-events-none rounded-full"
+          style={{
+            left: splatter.left,
+            right: splatter.right,
+            top: splatter.top,
+            width: `${splatter.size}px`,
+            height: `${splatter.size}px`,
+            background: `rgba(30, 30, 50, ${splatter.opacity})`,
+          }}
+        />
+      ))}
+    </>
+  );
+};
 
 // Custom hook for scroll animation
 const useScrollAnimation = (threshold = 0.2) => {
@@ -34,17 +182,17 @@ const useScrollAnimation = (threshold = 0.2) => {
 // Influence Tag Component
 const InfluenceTag = ({ type }) => {
   const colors = {
-    thinking: "rgba(139, 92, 246, 0.3)",
-    building: "rgba(59, 130, 246, 0.3)",
-    life: "rgba(34, 197, 94, 0.3)",
+    thinking: { bg: "rgba(139, 92, 246, 0.8)", text: "#ffffff" },
+    building: { bg: "rgba(59, 130, 246, 0.8)", text: "#ffffff" },
+    life: { bg: "rgba(34, 197, 94, 0.8)", text: "#ffffff" },
   };
 
   return (
     <span
-      className="px-2 py-0.5 rounded-md text-xs"
+      className="px-3 py-1 rounded-md text-xs font-semibold"
       style={{
-        background: colors[type] || "rgba(255, 255, 255, 0.1)",
-        color: "rgba(255, 255, 255, 0.7)",
+        background: colors[type]?.bg || "rgba(100, 100, 100, 0.8)",
+        color: colors[type]?.text || "#ffffff",
       }}
     >
       {type}
@@ -58,16 +206,16 @@ const RereadUrge = ({ level }) => {
   const count = levels[level] || 1;
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-500">re-read urge:</span>
+    <div className="flex items-center gap-2 px-3 py-1 rounded-md" style={{ background: 'rgba(0,0,0,0.08)' }}>
+      <span className="text-xs font-semibold text-gray-700">re-read urge:</span>
       <div className="flex gap-1">
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="w-2 h-2 rounded-full transition-all duration-300"
+            className="w-3 h-3 rounded-full transition-all duration-300"
             style={{
-              background: i <= count ? "rgba(255, 255, 255, 0.7)" : "rgba(255, 255, 255, 0.15)",
-              boxShadow: i <= count ? "0 0 6px rgba(255, 255, 255, 0.3)" : "none",
+              background: i <= count ? "#f59e0b" : "rgba(0, 0, 0, 0.15)",
+              boxShadow: i <= count ? "0 0 6px rgba(245, 158, 11, 0.5)" : "none",
             }}
           />
         ))}
@@ -76,9 +224,12 @@ const RereadUrge = ({ level }) => {
   );
 };
 
-// Book Spine Component
+// ============================================
+// BOOK SPINE WITH PULL ANIMATION & BOOKMARK
+// ============================================
 const BookSpine = ({ book, index, isVisible, onOpen }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isPulled, setIsPulled] = useState(false);
 
   // Vary spine width slightly for realism
   const widthVariants = [52, 48, 56, 50, 54, 46];
@@ -94,6 +245,24 @@ const BookSpine = ({ book, index, isVisible, onOpen }) => {
   ];
   const spineColor = colorVariants[index % colorVariants.length];
 
+  // Bookmark ribbon color based on first influence type
+  const ribbonColors = {
+    thinking: "#8b5cf6",
+    building: "#3b82f6",
+    life: "#22c55e",
+  };
+  const ribbonColor = ribbonColors[book.influence?.[0]] || "#666";
+  const showBookmark = true; // Show ribbon on all books
+
+  useEffect(() => {
+    if (isHovered) {
+      const timer = setTimeout(() => setIsPulled(true), 150);
+      return () => clearTimeout(timer);
+    } else {
+      setIsPulled(false);
+    }
+  }, [isHovered]);
+
   return (
     <div
       className={`relative cursor-pointer transition-all duration-500 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
@@ -104,6 +273,20 @@ const BookSpine = ({ book, index, isVisible, onOpen }) => {
       onMouseLeave={() => setIsHovered(false)}
       onClick={onOpen}
     >
+      {/* Bookmark Ribbon */}
+      {showBookmark && (
+        <div
+          className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-300"
+          style={{
+            width: '12px',
+            height: isHovered ? '28px' : '20px',
+            background: ribbonColor,
+            clipPath: 'polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          }}
+        />
+      )}
+
       {/* Book Spine */}
       <div
         className="relative h-72 md:h-80 rounded-sm transition-all duration-500"
@@ -111,9 +294,13 @@ const BookSpine = ({ book, index, isVisible, onOpen }) => {
           width: `${spineWidth}px`,
           background: spineColor,
           boxShadow: isHovered
-            ? "4px 4px 20px rgba(0, 0, 0, 0.5), inset 1px 0 0 rgba(255, 255, 255, 0.08)"
+            ? `4px 4px 20px rgba(0, 0, 0, 0.5), inset 1px 0 0 rgba(255, 255, 255, 0.08), 0 0 30px ${book.accentColor}`
             : "2px 2px 10px rgba(0, 0, 0, 0.3), inset 1px 0 0 rgba(255, 255, 255, 0.05)",
-          transform: isHovered ? "translateY(-12px) rotateY(-3deg)" : "translateY(0)",
+          transform: isPulled 
+            ? "translateY(-20px) translateZ(30px) rotateY(-8deg)" 
+            : isHovered 
+              ? "translateY(-5px)" 
+              : "translateY(0)",
           transformOrigin: "bottom center",
         }}
       >
@@ -162,29 +349,37 @@ const BookSpine = ({ book, index, isVisible, onOpen }) => {
 
         {/* Top accent */}
         <div
-          className="absolute top-0 inset-x-0 h-1 rounded-t-sm"
-          style={{ background: book.accentColor || "rgba(255, 255, 255, 0.1)" }}
+          className="absolute top-0 inset-x-0 h-1 rounded-t-sm transition-all duration-300"
+          style={{ 
+            background: book.accentColor || "rgba(255, 255, 255, 0.1)",
+            boxShadow: isHovered ? `0 0 15px ${book.accentColor}` : 'none',
+          }}
         />
       </div>
 
-      {/* Handwritten Note - appears on hover */}
+      {/* Handwritten Note - appears after pull */}
       <div
-        className="absolute -top-20 left-1/2 transform transition-all duration-500 pointer-events-none z-20"
+        className="absolute -top-24 left-1/2 transform transition-all duration-500 pointer-events-none z-20"
         style={{
-          opacity: isHovered ? 1 : 0,
-          transform: isHovered
+          opacity: isPulled ? 1 : 0,
+          transform: isPulled
             ? "translateX(-50%) translateY(0) rotate(-2deg) scale(1)"
-            : "translateX(-50%) translateY(10px) rotate(0deg) scale(0.95)",
+            : "translateX(-50%) translateY(15px) rotate(0deg) scale(0.9)",
         }}
       >
         <div
-          className="px-4 py-3 rounded-lg shadow-2xl min-w-[160px] max-w-[200px]"
+          className="px-4 py-3 rounded-lg shadow-2xl min-w-[160px] max-w-[200px] relative"
           style={{
             background: "rgba(255, 248, 220, 0.95)",
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), 4px 4px 0 rgba(0, 0, 0, 0.1)",
             transform: "rotate(-2deg)",
           }}
         >
+          {/* Ink splatter on note */}
+          <div 
+            className="absolute top-2 right-3 w-2 h-2 rounded-full"
+            style={{ background: 'rgba(30, 30, 80, 0.15)' }}
+          />
           <p
             className="text-xs leading-relaxed"
             style={{
@@ -208,14 +403,19 @@ const BookSpine = ({ book, index, isVisible, onOpen }) => {
   );
 };
 
-// Margin Notes Modal
+// ============================================
+// PAGE FLIP MODAL
+// ============================================
 const MarginNotesModal = ({ book, onClose }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [pageFlipped, setPageFlipped] = useState(false);
 
   useEffect(() => {
     setIsAnimating(true);
+    const flipTimer = setTimeout(() => setPageFlipped(true), 300);
     document.body.style.overflow = "hidden";
     return () => {
+      clearTimeout(flipTimer);
       document.body.style.overflow = "auto";
     };
   }, []);
@@ -231,80 +431,100 @@ const MarginNotesModal = ({ book, onClose }) => {
       <div
         className="absolute inset-0 transition-all duration-500"
         style={{
-          background: "rgba(0, 0, 0, 0.85)",
+          background: "rgba(0, 0, 0, 0.9)",
           backdropFilter: "blur(12px)",
           opacity: isAnimating ? 1 : 0,
         }}
       />
 
-      {/* Modal Content */}
+      {/* Book/Page Modal */}
       <div
-        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl transition-all duration-500"
+        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto transition-all duration-700"
         style={{
-          background: "rgba(20, 20, 20, 0.95)",
-          backdropFilter: "blur(40px)",
-          WebkitBackdropFilter: "blur(40px)",
-          border: "1px solid rgba(255, 255, 255, 0.15)",
-          boxShadow: "0 40px 100px rgba(0, 0, 0, 0.6)",
+          background: "linear-gradient(135deg, #f5f0e6 0%, #ebe6dc 50%, #e8e3d9 100%)",
+          borderRadius: '4px',
+          boxShadow: "0 40px 100px rgba(0, 0, 0, 0.6), -5px 0 20px rgba(0,0,0,0.2) inset",
           opacity: isAnimating ? 1 : 0,
-          transform: isAnimating ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
+          transform: isAnimating 
+            ? `perspective(1000px) rotateY(${pageFlipped ? '0deg' : '-90deg'})` 
+            : "perspective(1000px) rotateY(-90deg)",
+          transformOrigin: 'left center',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top shine line */}
-        <div
-          className="absolute inset-x-0 top-0 h-px pointer-events-none rounded-t-3xl"
+        {/* Page texture */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-30"
           style={{
-            background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)",
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        {/* Page edge shadow */}
+        <div 
+          className="absolute left-0 top-0 bottom-0 w-8 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, rgba(0,0,0,0.1), transparent)',
           }}
         />
 
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full transition-all duration-300 hover:bg-white/10 z-10"
+          className="absolute top-6 right-6 p-2 rounded-full transition-all duration-300 hover:bg-black/10 z-10"
         >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         <div className="p-8 md:p-10">
           {/* Header */}
-          <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{book.title}</h2>
-            <p className="text-gray-400">{book.author}</p>
+          <div className="mb-8 border-b-2 border-gray-300 pb-4">
+            <h2 
+              className="text-2xl md:text-3xl font-bold mb-2"
+              style={{ color: '#2d2d2d', fontFamily: "'Georgia', serif" }}
+            >
+              {book.title}
+            </h2>
+            <p className="text-gray-600 italic">{book.author}</p>
           </div>
 
-          {/* Margin Notes */}
+          {/* Margin Notes with Typewriter */}
           <div className="space-y-6">
             {/* Favorite Idea */}
-            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
-              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+            <div className="p-5 rounded-lg border-l-4" style={{ borderColor: '#22c55e', background: 'rgba(255,255,255,0.5)' }}>
+              <h4 className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
                 <span>⭐</span> Favorite idea
               </h4>
-              <p className="text-gray-300 leading-relaxed">{book.favoriteIdea}</p>
+              <p className="text-gray-800 leading-relaxed" style={{ fontFamily: "'Georgia', serif" }}>
+                {pageFlipped && <TypewriterText text={book.favoriteIdea} delay={400} speed={25} />}
+              </p>
             </div>
 
             {/* One Disagreement */}
-            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
-              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+            <div className="p-5 rounded-lg border-l-4" style={{ borderColor: '#f59e0b', background: 'rgba(255,255,255,0.5)' }}>
+              <h4 className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
                 <span>⚖️</span> One disagreement
               </h4>
-              <p className="text-gray-300 leading-relaxed">{book.disagreement}</p>
+              <p className="text-gray-800 leading-relaxed" style={{ fontFamily: "'Georgia', serif" }}>
+                {pageFlipped && <TypewriterText text={book.disagreement} delay={1500} speed={25} />}
+              </p>
             </div>
 
             {/* Question Left */}
-            <div className="p-5 rounded-xl" style={{ background: "rgba(255, 255, 255, 0.03)" }}>
-              <h4 className="text-sm font-semibold text-gray-400 mb-2 flex items-center gap-2">
+            <div className="p-5 rounded-lg border-l-4" style={{ borderColor: '#8b5cf6', background: 'rgba(255,255,255,0.5)' }}>
+              <h4 className="text-sm font-semibold text-gray-600 mb-2 flex items-center gap-2">
                 <span>❓</span> Question it left me with
               </h4>
-              <p className="text-gray-300 leading-relaxed">{book.question}</p>
+              <p className="text-gray-800 leading-relaxed" style={{ fontFamily: "'Georgia', serif" }}>
+                {pageFlipped && <TypewriterText text={book.question} delay={2600} speed={25} />}
+              </p>
             </div>
           </div>
 
           {/* Extra Details */}
-          <div className="mt-8 pt-6 flex flex-wrap items-center gap-4" style={{ borderTop: "1px solid rgba(255, 255, 255, 0.1)" }}>
+          <div className="mt-8 pt-6 flex flex-wrap items-center gap-4" style={{ borderTop: "2px solid rgba(0, 0, 0, 0.1)" }}>
             {book.rereadUrge && <RereadUrge level={book.rereadUrge} />}
             
             {book.influence && (
@@ -322,14 +542,25 @@ const MarginNotesModal = ({ book, onClose }) => {
   );
 };
 
-// Main Books Page
+// ============================================
+// MAIN BOOKS PAGE
+// ============================================
 export default function BeyondBooks() {
-  const [splineLoaded, setSplineLoaded] = useState(false);
-  const [splineError, setSplineError] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [mousePosition, setMousePosition] = useState(null);
+  const containerRef = useRef(null);
 
   const [heroRef, heroVisible] = useScrollAnimation(0.2);
   const [shelfRef, shelfVisible] = useScrollAnimation(0.1);
+
+  const handleMouseMove = useCallback((e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  }, []);
 
   // Books Data
   const books = [
@@ -424,31 +655,13 @@ export default function BeyondBooks() {
   ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Spline Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        {!splineError ? (
-          <Spline
-            scene="https://prod.spline.design/pX-RxNY-kD9Fb7ce/scene.splinecode"
-            onLoad={() => setSplineLoaded(true)}
-            onError={() => setSplineError(true)}
-          />
-        ) : (
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-              width: "100%",
-              height: "100%",
-            }}
-          />
-        )}
-      </div>
-
-      {/* Dark Overlay */}
-      <div
-        className="fixed inset-0 z-1 pointer-events-none"
-        style={{ background: "rgba(0, 0, 0, 0.4)" }}
-      />
+    <div 
+      ref={containerRef}
+      className="min-h-screen relative overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Starfield Background */}
+      <Starfield />
 
       {/* Content */}
       <div className="relative z-10">
@@ -495,13 +708,19 @@ export default function BeyondBooks() {
         </section>
 
         {/* Bookshelf Section */}
-        <section ref={shelfRef} className="px-6 md:px-12 lg:px-24 py-16">
+        <section ref={shelfRef} className="px-6 md:px-12 lg:px-24 py-16 relative">
+          {/* Coffee Stains */}
+          <CoffeeStains />
+          
+          {/* Ink Splatters */}
+          <InkSplatters />
+
           <div className="max-w-6xl mx-auto">
             {/* Shelf */}
             <div
               className="relative p-8 rounded-2xl"
               style={{
-                background: "rgba(20, 20, 20, 0.5)",
+                background: "rgba(20, 20, 20, 0.6)",
                 backdropFilter: "blur(20px)",
                 border: "1px solid rgba(255, 255, 255, 0.08)",
               }}
@@ -548,33 +767,6 @@ export default function BeyondBooks() {
           book={selectedBook}
           onClose={() => setSelectedBook(null)}
         />
-      )}
-
-      {/* Loading Screen */}
-      {!splineLoaded && (
-        <div
-          className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
-          style={{ backgroundColor: "rgba(34, 34, 34, 0.5)" }}
-        >
-          <div
-            className="flex flex-col items-center p-8 rounded-3xl backdrop-blur-xl"
-            style={{
-              backgroundColor: "rgba(248, 248, 248, 0.025)",
-              borderWidth: "1px",
-              borderStyle: "solid",
-              borderColor: "rgba(248, 248, 248, 0.2)",
-            }}
-          >
-            <div
-              className="w-16 h-16 border-2 rounded-full animate-spin mb-6"
-              style={{
-                borderColor: "rgba(248, 248, 248, 0.2)",
-                borderTopColor: "rgba(248, 248, 248, 0.8)",
-              }}
-            />
-            <p className="text-white/80 text-lg font-medium">Loading shelf...</p>
-          </div>
-        </div>
       )}
     </div>
   );

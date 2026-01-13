@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import Spline from "@splinetool/react-spline";
 import Footer from "../lib/components/footer.jsx";
 
 // Custom hook for scroll animation
@@ -109,6 +108,262 @@ const RealityBadge = ({ type }) => {
       <span>{badges[type] || "💭"}</span>
       <span>{type}</span>
     </span>
+  );
+};
+
+// Starfield Background Component
+const Starfield = () => {
+  const stars = Array.from({ length: 150 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 0.5,
+    opacity: Math.random() * 0.7 + 0.3,
+    twinkleDelay: Math.random() * 5,
+  }));
+
+  return (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* Pure black background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "#000000",
+        }}
+      />
+      {/* Stars */}
+      {stars.map((star) => (
+        <div
+          key={star.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            background: "white",
+            opacity: star.opacity,
+            boxShadow: `0 0 ${star.size * 2}px rgba(255,255,255,${star.opacity})`,
+            animation: `twinkle ${3 + Math.random() * 2}s ease-in-out infinite`,
+            animationDelay: `${star.twinkleDelay}s`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Holographic Orbit System - Black/White with Violet Energy
+const HolographicOrbit = ({ projects, onOpenProject }) => {
+  const [activeProject, setActiveProject] = useState(null);
+  const [rotation, setRotation] = useState(0);
+
+  // Unified violet energy color
+  const energyColor = "#8B5CF6";
+
+  // FASTER rotation when not hovering
+  useEffect(() => {
+    if (activeProject !== null) return;
+    const interval = setInterval(() => {
+      setRotation((prev) => (prev + 0.09) % 360); // Faster: 0.03 -> 0.12
+    }, 50);
+    return () => clearInterval(interval);
+  }, [activeProject]);
+
+  // Calculate project position in orbit - BIGGER radius
+  const getProjectPosition = (index, total) => {
+    const angle = ((index / total) * 360 + rotation) * (Math.PI / 180);
+    const radius = 400; // Increased from 320
+    return {
+      x: Math.cos(angle) * radius,
+      y: Math.sin(angle) * radius * 0.35,
+      z: Math.sin(angle),
+    };
+  };
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ minHeight: "1000px" }}>
+      <style>{`
+        @keyframes scanLine { 0% { top: -10%; } 100% { top: 110%; } }
+        @keyframes pulseCore { 
+          0%, 5% { box-shadow: 0 0 40px rgba(139,92,246,0.2), inset 0 0 20px rgba(139,92,246,0.05); }
+          10%, 20% { box-shadow: 0 0 100px rgba(139,92,246,0.7), inset 0 0 50px rgba(139,92,246,0.25); }
+          30%, 100% { box-shadow: 0 0 40px rgba(139,92,246,0.2), inset 0 0 20px rgba(139,92,246,0.05); }
+        }
+        @keyframes orbitGlow { 
+          0%, 8% { opacity: 0.2; }
+          12%, 22% { opacity: 0.6; }
+          32%, 100% { opacity: 0.2; }
+        }
+        @keyframes energyPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes cardEnergy {
+          0%, 28% { 
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          }
+          35%, 50% { 
+            border-color: rgba(139,92,246,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 35px rgba(139,92,246,0.5);
+          }
+          60%, 100% { 
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+          }
+        }
+        .card-energy {
+          border: 1px solid rgba(255,255,255,0.15);
+          animation: cardEnergy 3s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Orbital Ring - BIGGER */}
+      <div 
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        style={{ width: "820px", height: "290px", border: `1px solid rgba(139,92,246,0.25)`, animation: "orbitGlow 4s ease-in-out infinite" }}
+      />
+      <div 
+        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+        style={{ width: "860px", height: "300px", border: "1px dashed rgba(255,255,255,0.08)" }}
+      />
+
+      {/* Central Core - BIGGER */}
+      <div 
+        className="absolute left-1/2 top-1/2 z-20 flex flex-col items-center justify-center"
+        style={{
+          width: "160px", height: "160px",
+          background: "radial-gradient(circle, rgba(20,20,20,0.9) 0%, rgba(10,10,10,0.95) 70%, transparent 100%)",
+          borderRadius: "50%", 
+          border: "2px solid rgba(139,92,246,0.4)",
+          transform: "translate(-50%, -50%)", 
+          animation: "pulseCore 3s ease-in-out infinite",
+        }}
+      >
+        <span className="text-white text-sm font-mono tracking-widest mb-1" style={{ textShadow: `0 0 20px ${energyColor}` }}>PROJECTS</span>
+        <span className="text-white/40 text-[11px] font-mono">{projects.length} ACTIVE</span>
+      </div>
+
+      {/* Orbiting Cards */}
+      {projects.map((project, index) => {
+        const pos = getProjectPosition(index, projects.length);
+        const isActive = activeProject === index;
+        const depth = (pos.z + 1) / 2;
+        const scale = 0.85 + depth * 0.2;
+
+        return (
+          <div
+            key={project.id}
+            className="absolute left-1/2 top-1/2 cursor-pointer transition-all"
+            style={{
+              transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) scale(${isActive ? 1.1 : scale})`,
+              zIndex: isActive ? 100 : Math.round(depth * 10),
+              opacity: isActive ? 1 : 0.5 + depth * 0.5,
+              transitionDuration: isActive ? "300ms" : "80ms",
+            }}
+            onMouseEnter={() => setActiveProject(index)}
+            onMouseLeave={() => setActiveProject(null)}
+            onClick={() => onOpenProject(project)}
+          >
+            {/* Card - BIGGER, Black/White with Energy Pulse */}
+            <div
+              className="relative overflow-hidden card-energy"
+              style={{
+                width: "220px", 
+                padding: "20px",
+                background: isActive 
+                  ? "linear-gradient(180deg, rgba(30,30,30,0.98) 0%, rgba(15,15,15,0.99) 100%)"
+                  : "linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(10,10,10,0.98) 100%)",
+                borderRadius: "12px",
+                // Hover overrides animation visually
+                ...(isActive && {
+                  border: `1px solid ${energyColor}`,
+                  boxShadow: `0 0 50px ${energyColor}60, 0 20px 40px rgba(0,0,0,0.6)`,
+                }),
+              }}
+            >
+              {/* Scan line - violet */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl" style={{ opacity: isActive ? 0.5 : 0.15 }}>
+                <div 
+                  className="absolute w-full h-px"
+                  style={{ 
+                    background: `linear-gradient(90deg, transparent, ${energyColor}60, transparent)`,
+                    animation: "scanLine 2.5s linear infinite" 
+                  }} 
+                />
+              </div>
+
+              {/* Corner decorations - white default, violet on hover */}
+              <div className="absolute top-2 left-2 w-3 h-px transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute top-2 left-2 w-px h-3 transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute top-2 right-2 w-3 h-px transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute top-2 right-2 w-px h-3 transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute bottom-2 left-2 w-3 h-px transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute bottom-2 left-2 w-px h-3 transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute bottom-2 right-2 w-3 h-px transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+              <div className="absolute bottom-2 right-2 w-px h-3 transition-all" style={{ background: isActive ? energyColor : 'rgba(255,255,255,0.3)' }} />
+
+              {/* Status - violet energy */}
+              <div className="flex items-center gap-2 mb-2">
+                <div 
+                  className="w-2 h-2 rounded-full transition-all" 
+                  style={{ 
+                    background: isActive ? energyColor : 'rgba(255,255,255,0.5)', 
+                    boxShadow: isActive ? `0 0 10px ${energyColor}` : 'none',
+                    animation: isActive ? "energyPulse 2s ease-in-out infinite" : "none",
+                  }} 
+                />
+                <span className="text-[9px] font-mono tracking-wider transition-all" style={{ color: isActive ? energyColor : 'rgba(255,255,255,0.5)' }}>
+                  {project.status.toUpperCase()}
+                </span>
+              </div>
+
+              {/* ID */}
+              <span className="text-[9px] text-white/30 font-mono block mb-1">{project.id.toUpperCase()}</span>
+
+              {/* Name */}
+              <h3 
+                className="text-sm font-bold text-white leading-tight mb-2 transition-all" 
+                style={{ textShadow: isActive ? `0 0 15px ${energyColor}60` : "none" }}
+              >
+                {project.name}
+              </h3>
+
+              {/* Hypothesis */}
+              <p className="text-[10px] text-white/40 leading-relaxed line-clamp-2 mb-3">{project.hypothesis}</p>
+
+              {/* Tech - black/white, violet on hover */}
+              <div className="flex flex-wrap gap-1 mb-5">
+                {project.techPreview.slice(0, 3).map((tech, idx) => (
+                  <span 
+                    key={idx} 
+                    className="px-1.5 py-0.5 text-[8px] rounded transition-all" 
+                    style={{ 
+                      background: isActive ? `${energyColor}20` : "rgba(255,255,255,0.05)", 
+                      border: `1px solid ${isActive ? energyColor + '50' : 'rgba(255,255,255,0.15)'}`, 
+                      color: isActive ? energyColor : "rgba(255,255,255,0.5)" 
+                    }}
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+
+              {isActive && (
+                <div className="absolute bottom-3 left-0 right-0 text-center">
+                  <span className="text-[8px] font-mono" style={{ color: energyColor }}>[ CLICK TO ACCESS ]</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
@@ -398,8 +653,6 @@ const DossierModal = ({ project, onClose }) => {
 
 // Main Projects Page
 export default function ProjectPage() {
-  const [splineLoaded, setSplineLoaded] = useState(false);
-  const [splineError, setSplineError] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
   const [heroRef, heroVisible] = useScrollAnimation(0.2);
@@ -518,61 +771,19 @@ export default function ProjectPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Spline Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        {!splineError ? (
-          <Spline
-            scene="https://prod.spline.design/pX-RxNY-kD9Fb7ce/scene.splinecode"
-            onLoad={() => setSplineLoaded(true)}
-            onError={() => setSplineError(true)}
-          />
-        ) : (
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-              width: "100%",
-              height: "100%",
-            }}
-          />
-        )}
-      </div>
-
-      {/* Dark Overlay */}
-      <div
-        className="fixed inset-0 z-1 pointer-events-none"
-        style={{ background: "rgba(0, 0, 0, 0.4)" }}
-      />
+      {/* Starfield Background */}
+      <Starfield />
 
       {/* Content */}
       <div className="relative z-10">
         {/* Hero Section */}
         <section
           ref={heroRef}
-          className="min-h-[50vh] flex items-center justify-center px-6 md:px-12 lg:px-24 pt-28 pb-12"
+          className="flex items-center justify-center px-6 md:px-12 lg:px-24 pt-24 pb-0"
         >
           <div className="text-center max-w-4xl">
-            <div
-              className={`inline-block mb-6 px-6 py-2 rounded-full text-sm font-medium relative overflow-hidden transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
-              style={{
-                background: "rgba(255, 255, 255, 0.08)",
-                backdropFilter: "blur(20px)",
-                WebkitBackdropFilter: "blur(20px)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                boxShadow: "0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-                color: "#E5E7EB",
-              }}
-            >
-              <div
-                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)",
-                }}
-              />
-              <span className="relative z-10">experiments with side effects</span>
-            </div>
-
             <h1
-              className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
+              className={`text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-200 via-white to-purple-200 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
               style={{ transitionDelay: "200ms" }}
             >
               Experiments Lab
@@ -582,32 +793,30 @@ export default function ProjectPage() {
               className={`text-xl md:text-2xl text-gray-400 transform transition-all duration-1000 ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
               style={{ transitionDelay: "400ms" }}
             >
-              ideas that escaped my head and demanded to be built.
+              mission control for ideas that demanded to be built
+            </p>
+
+            <p
+              className={`text-sm text-gray-600 mt-4 transform transition-all duration-1000 font-mono ${heroVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+              style={{ transitionDelay: "600ms" }}
+            >
+              [ orbiting • hover to scan • click to access ]
             </p>
           </div>
         </section>
 
-        {/* Projects Grid */}
-        <section ref={projectsRef} className="px-6 md:px-12 lg:px-24 py-16">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project, index) => (
-                <ExperimentCard
-                  key={project.id}
-                  project={project}
-                  index={index}
-                  isVisible={projectsVisible}
-                  onOpen={() => setSelectedProject(project)}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Holographic Orbit Section */}
+        <section ref={projectsRef} className="relative">
+          <HolographicOrbit 
+            projects={projects} 
+            onOpenProject={(project) => setSelectedProject(project)}
+          />
         </section>
 
         {/* Ending Line */}
         <div className="text-center py-20 px-6">
-          <p className="text-gray-500 text-lg">
-            more experiments planned. curiosity undefeated.
+          <p className="text-gray-600 text-lg font-mono">
+            // more experiments loading... stay curious 🚀
           </p>
         </div>
 
@@ -623,32 +832,6 @@ export default function ProjectPage() {
         />
       )}
 
-      {/* Loading Screen */}
-      {!splineLoaded && (
-        <div
-          className="fixed inset-0 backdrop-blur-md z-[100] flex items-center justify-center"
-          style={{ backgroundColor: "rgba(34, 34, 34, 0.5)" }}
-        >
-          <div
-            className="flex flex-col items-center p-8 rounded-3xl backdrop-blur-xl"
-            style={{
-              backgroundColor: "rgba(248, 248, 248, 0.025)",
-              borderWidth: "1px",
-              borderStyle: "solid",
-              borderColor: "rgba(248, 248, 248, 0.2)",
-            }}
-          >
-            <div
-              className="w-16 h-16 border-2 rounded-full animate-spin mb-6"
-              style={{
-                borderColor: "rgba(248, 248, 248, 0.2)",
-                borderTopColor: "rgba(248, 248, 248, 0.8)",
-              }}
-            />
-            <p className="text-white/80 text-lg font-medium">Loading experiments...</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

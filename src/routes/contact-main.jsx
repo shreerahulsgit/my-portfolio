@@ -1,563 +1,503 @@
 import { useState, useEffect } from 'react';
-import { Phone, MapPin, MessageCircle, Github, Linkedin, Twitter, Dribbble } from 'lucide-react';
-import LoadingOverlay from '../lib/components/loading-overlay.jsx';
-import SplineMasking from '../lib/components/spline-masking.jsx';
-import Spline from '@splinetool/react-spline';
-import Footer from '../lib/components/footer.jsx';
+import { Mail, MapPin, Phone, Send, ArrowUpRight, Github, Linkedin, Twitter, Radio, Zap, Satellite } from 'lucide-react';
 
-// Glass Card Component with Apple-style shine
-const GlassCard = ({ children, className = '', isHovered, onMouseEnter, onMouseLeave, delay = 0, isLoaded }) => {
-    return (
+// Starfield Component
+const Starfield = () => {
+  const stars = Array.from({ length: 80 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: 1 + Math.random() * 2,
+    duration: 2 + Math.random() * 3,
+    delay: Math.random() * 3,
+  }));
+
+  const shootingStars = Array.from({ length: 3 }, (_, i) => ({
+    id: i,
+    delay: i * 8 + Math.random() * 5,
+    duration: 1.5 + Math.random(),
+  }));
+
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+        @keyframes shootingStar {
+          0% { transform: translateX(-100px) translateY(-100px); opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px)); opacity: 0; }
+        }
+        @keyframes nebulaDrift {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(30px, -20px) scale(1.1); }
+        }
+      `}</style>
+      
+      {/* Stars */}
+      {stars.map((star) => (
         <div
-            className={`group relative overflow-hidden backdrop-blur-xl rounded-3xl p-8 md:p-10 transition-all duration-700 ease-out ${
-                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'
-            } ${className}`}
-            style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: isHovered
-                    ? '0 25px 80px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
-                    : '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                transform: isHovered ? 'scale(1.02)' : 'scale(1)',
-                transitionDelay: `${delay}ms`,
-            }}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-        >
-            {/* Top shine line */}
-            <div
-                className="absolute inset-x-0 top-0 h-px pointer-events-none"
-                style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-                }}
-            />
-            {/* Glass shine gradient */}
-            <div
-                className="absolute inset-x-0 top-0 h-1/3 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 100%)',
-                    borderRadius: '24px 24px 0 0',
-                }}
-            />
-            {/* Shimmer effect */}
-            <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.1) 50%, transparent 60%)',
-                    transform: isHovered ? 'translateX(200%)' : 'translateX(-200%)',
-                    transition: 'transform 1s ease-in-out',
-                }}
-            />
-            {children}
-        </div>
-    );
-};
+          key={star.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            animation: `twinkle ${star.duration}s ease-in-out infinite`,
+            animationDelay: `${star.delay}s`,
+          }}
+        />
+      ))}
 
-// Glass Input Component
-const GlassInput = ({ type = 'text', id, name, value, onChange, placeholder, required, rows, isTextarea }) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const [isHovered, setIsHovered] = useState(false);
-
-    const commonProps = {
-        id,
-        name,
-        value,
-        onChange,
-        placeholder,
-        required,
-        className: 'w-full px-4 py-3 rounded-2xl backdrop-blur-md outline-none transition-all duration-300 relative z-10',
-        style: {
-            background: isFocused || isHovered ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.05)',
-            border: `1px solid ${isFocused ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`,
-            boxShadow: isFocused
-                ? '0 0 20px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                : 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-            color: '#FFFFFF',
-        },
-        onFocus: () => setIsFocused(true),
-        onBlur: () => setIsFocused(false),
-        onMouseEnter: () => setIsHovered(true),
-        onMouseLeave: () => setIsHovered(false),
-    };
-
-    return (
-        <div className="relative overflow-hidden rounded-2xl">
-            {/* Top shine line */}
-            <div
-                className="absolute inset-x-0 top-0 h-px pointer-events-none z-20"
-                style={{
-                    background: isFocused 
-                        ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)'
-                        : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                    transition: 'all 0.3s',
-                }}
-            />
-            {isTextarea ? (
-                <textarea {...commonProps} rows={rows} className={`${commonProps.className} resize-none`} />
-            ) : (
-                <input {...commonProps} type={type} />
-            )}
-        </div>
-    );
-};
-
-// Glass Button Component
-const GlassButton = ({ onClick, children, className = '' }) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    return (
-        <button
-            onClick={onClick}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className={`w-full relative overflow-hidden backdrop-blur-md font-semibold px-6 py-4 rounded-2xl transition-all duration-500 transform hover:scale-[1.02] active:scale-[0.98] ${className}`}
-            style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: isHovered
-                    ? '0 20px 60px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                    : '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                color: '#FFFFFF',
-            }}
-        >
-            {/* Top shine gradient */}
-            <div
-                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%)',
-                    borderRadius: '16px 16px 0 0',
-                }}
-            />
-            {/* Shimmer effect */}
-            <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.2) 50%, transparent 80%)',
-                    transform: isHovered ? 'translateX(200%)' : 'translateX(-200%)',
-                    transition: 'transform 0.8s ease-in-out',
-                }}
-            />
-            <span className="relative z-10">{children}</span>
-        </button>
-    );
-};
-
-// Glass Social Icon Component
-const GlassSocialIcon = ({ social }) => {
-    const [isHovered, setIsHovered] = useState(false);
-    const Icon = social.icon;
-
-    return (
-        <a
-            href={social.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="relative overflow-hidden p-3 backdrop-blur-md rounded-2xl transition-all duration-500"
-            style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: isHovered
-                    ? '0 15px 40px rgba(255, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                    : '0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                transform: isHovered ? 'translateY(-5px) scale(1.1)' : 'translateY(0) scale(1)',
-                color: isHovered ? '#FFFFFF' : '#9CA3AF',
-            }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            aria-label={social.name}
-        >
-            {/* Top shine line */}
-            <div
-                className="absolute inset-x-0 top-0 h-px pointer-events-none"
-                style={{
-                    background: isHovered
-                        ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent)'
-                        : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                    transition: 'all 0.3s',
-                }}
-            />
-            {/* Glass shine gradient */}
-            <div
-                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 100%)',
-                    borderRadius: '16px 16px 0 0',
-                }}
-            />
-            {/* Shimmer effect */}
-            <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%)',
-                    transform: isHovered ? 'translateX(200%)' : 'translateX(-200%)',
-                    transition: 'transform 0.6s ease-in-out',
-                }}
-            />
-            <Icon
-                size={20}
-                className="relative z-10 transition-all duration-300"
-                style={{
-                    filter: isHovered ? 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.3))' : 'none',
-                }}
-            />
-        </a>
-    );
-};
-
-// Glass Icon Box Component
-const GlassIconBox = ({ children }) => {
-    const [isHovered, setIsHovered] = useState(false);
-
-    return (
+      {/* Shooting Stars */}
+      {shootingStars.map((star) => (
         <div
-            className="relative overflow-hidden p-3 rounded-xl transition-all duration-300"
-            style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: isHovered
-                    ? '0 8px 24px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
-                    : 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                transform: isHovered ? 'scale(1.1)' : 'scale(1)',
-            }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        >
-            {/* Top shine */}
-            <div
-                className="absolute inset-x-0 top-0 h-px pointer-events-none"
-                style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                }}
-            />
-            <div
-                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                style={{
-                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%)',
-                    borderRadius: '12px 12px 0 0',
-                }}
-            />
-            {children}
-        </div>
-    );
+          key={`shooting-${star.id}`}
+          className="absolute"
+          style={{
+            left: '-100px',
+            top: `${20 + star.id * 25}%`,
+            width: '100px',
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.8), #fff)',
+            borderRadius: '50%',
+            boxShadow: '0 0 10px rgba(139,92,246,0.5)',
+            animation: `shootingStar ${star.duration}s linear infinite`,
+            animationDelay: `${star.delay}s`,
+          }}
+        />
+      ))}
+
+      {/* Nebula Clouds */}
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={`nebula-${i}`}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${10 + i * 20}%`,
+            top: `${20 + (i % 3) * 30}%`,
+            width: `${200 + i * 50}px`,
+            height: `${200 + i * 50}px`,
+            background: `radial-gradient(circle, rgba(139,92,246,0.03) 0%, transparent 70%)`,
+            filter: 'blur(40px)',
+            animation: `nebulaDrift ${15 + i * 3}s ease-in-out infinite`,
+            animationDelay: `${i * 2}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Holographic Card Component
+const HoloCard = ({ children, className = '', delay = 0 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className={`relative rounded-xl overflow-hidden transition-all duration-500 ${className}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        background: 'linear-gradient(180deg, rgba(20,20,25,0.95) 0%, rgba(10,10,15,0.98) 100%)',
+        border: `1px solid ${isHovered ? 'rgba(139,92,246,0.4)' : 'rgba(255,255,255,0.08)'}`,
+        boxShadow: isHovered 
+          ? '0 0 40px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.4)' 
+          : '0 8px 32px rgba(0,0,0,0.3)',
+        animationDelay: `${delay}ms`,
+      }}
+    >
+      <style>{`
+        @keyframes scanLine {
+          0% { top: -10%; }
+          100% { top: 110%; }
+        }
+      `}</style>
+
+      {/* Scan Line */}
+      <div
+        className="absolute left-0 right-0 h-[1px] pointer-events-none z-10"
+        style={{
+          background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent)',
+          animation: 'scanLine 4s linear infinite',
+        }}
+      />
+
+      {/* Corner Brackets */}
+      <div className="absolute top-2 left-2 w-4 h-4 border-l border-t border-white/20" />
+      <div className="absolute top-2 right-2 w-4 h-4 border-r border-t border-white/20" />
+      <div className="absolute bottom-2 left-2 w-4 h-4 border-l border-b border-white/20" />
+      <div className="absolute bottom-2 right-2 w-4 h-4 border-r border-b border-white/20" />
+
+      {/* Top shine */}
+      <div 
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.4), transparent)' }}
+      />
+
+      {/* Content */}
+      <div className="relative z-0 p-8">
+        {children}
+      </div>
+    </div>
+  );
 };
 
 const ContactMain = () => {
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [splineLoaded, setSplineLoaded] = useState(false);
-    const [hoveredCard, setHoveredCard] = useState(null);
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        companyName: '',
-        email: '',
-        phoneNumber: '',
-        message: '',
-        agreePrivacy: false,
-    });
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setIsLoaded(true), 300);
-        return () => clearTimeout(timer);
-    }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setSplineLoaded(true), 2000);
-        return () => clearTimeout(timer);
-    }, []);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value,
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: '29f306d4-9742-4713-a4be-e903f21eb3a8',
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          from_name: 'Portfolio Contact Form',
+        }),
+      });
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Form submitted:', formData);
-        const messageBox = document.getElementById('message-box');
-        if (messageBox) {
-            messageBox.style.display = 'block';
-            setTimeout(() => {
-                messageBox.style.display = 'none';
-            }, 3000);
+      const data = await response.json();
+      
+      if (data.success) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: '', message: '' });
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        alert('Transmission failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Signal lost. Please try again.');
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const contactDetails = [
+    { icon: Radio, label: 'FREQUENCY', value: 'shreerahul3636@email.com', href: 'mailto:shreerahul3636@email.com' },
+    { icon: Phone, label: 'DIRECT LINE', value: '+91 6382543212', href: 'tel:+916382543212' },
+    { icon: Satellite, label: 'COORDINATES', value: 'Bengaluru, India', href: null },
+  ];
+
+  const socials = [
+    { icon: Github, href: 'https://github.com', label: 'GitHub' },
+    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
+    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
+  ];
+
+  const energyColor = '#8B5CF6';
+
+  return (
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      <Starfield />
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; box-shadow: 0 0 10px #22C55E; }
+          50% { opacity: 0.5; box-shadow: 0 0 20px #22C55E; }
         }
-        setFormData({
-            firstName: '',
-            lastName: '',
-            companyName: '',
-            email: '',
-            phoneNumber: '',
-            message: '',
-            agreePrivacy: false,
-        });
-    };
+        @keyframes borderGlow {
+          0%, 100% { border-color: rgba(139,92,246,0.3); box-shadow: 0 0 10px rgba(139,92,246,0.1); }
+          50% { border-color: rgba(139,92,246,0.6); box-shadow: 0 0 20px rgba(139,92,246,0.3); }
+        }
+        @keyframes transmitPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+          100% { transform: scale(1); }
+        }
+        .input-focus {
+          animation: borderGlow 2s ease-in-out infinite;
+        }
+      `}</style>
 
-    const contactInfo = {
-        visitUs: {
-            address: '67 Wisteria Way Croydon South VIC 3156 AU',
-            description: 'Come say hello at our office HQ.',
-        },
-        chatToUs: {
-            email: 'hello@yourportfolio.com',
-            description: 'Our friendly team is here to help.',
-        },
-        callUs: {
-            phone: '(+995) 555-55-55-55',
-            hours: 'Mon-Fri from 8am to 5pm',
-        },
-        socialMedia: [
-            {
-                name: 'Github',
-                icon: Github,
-                url: 'https://github.com/your-username',
-            },
-            {
-                name: 'Linkedin',
-                icon: Linkedin,
-                url: 'https://linkedin.com/in/your-profile',
-            },
-            {
-                name: 'Twitter',
-                icon: Twitter,
-                url: 'https://twitter.com/your-handle',
-            },
-            {
-                name: 'Dribbble',
-                icon: Dribbble,
-                url: 'https://dribbble.com/your-profile',
-            },
-        ],
-    };
-
-    return (
-        <div
-            className="relative min-h-screen overflow-x-hidden"
-            style={{ backgroundColor: '#111111', minHeight: '100vh' }}
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 md:py-32">
+        {/* Header */}
+        <div 
+          className={`mb-16 md:mb-24 transition-all duration-1000 ${
+            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
-            <div
-                className="absolute inset-0 w-full h-full"
-                style={{ backgroundColor: '#111111', zIndex: -1 }}
-            ></div>
-            <div className="fixed inset-0 z-0">
-                <div className="w-full h-full mt-16">
-                    <Spline
-                        scene="https://prod.spline.design/jH0R0xalzSLTmfC5/scene.splinecode"
-                        onLoad={() => setSplineLoaded(true)}
-                        className="w-full h-full"
-                    />
-                </div>
-            </div>
+          {/* Status Badge */}
+          <div 
+            className="inline-flex items-center gap-3 mb-8 px-4 py-2 rounded-full"
+            style={{
+              background: 'rgba(34,197,94,0.1)',
+              border: '1px solid rgba(34,197,94,0.3)',
+            }}
+          >
+            <div 
+              className="w-2 h-2 rounded-full bg-emerald-400"
+              style={{ animation: 'pulse 2s ease-in-out infinite' }}
+            />
+            <span className="font-mono text-xs tracking-widest text-emerald-400">SIGNAL ACTIVE</span>
+            <Radio className="w-4 h-4 text-emerald-400" />
+          </div>
 
-            <div className="relative z-20 px-6 pt-16 pb-16">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <div
-                            className={`inline-block mb-6 px-6 py-2 rounded-full text-sm font-medium relative overflow-hidden transform transition-all duration-1000 ease-out ${
-                                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                            }`}
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.08)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(255, 255, 255, 0.15)',
-                                boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-                                color: '#E5E7EB',
-                            }}
-                        >
-                            <div
-                                className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
-                                style={{
-                                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%)',
-                                }}
-                            />
-                            <span className="relative z-10">💬 Get In Touch</span>
-                        </div>
-                        <h1
-                            className={`text-4xl md:text-5xl lg:text-6xl font-bold mb-6 transform transition-all duration-1000 ease-out bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300 ${
-                                isLoaded
-                                    ? 'translate-y-0 opacity-100'
-                                    : 'translate-y-12 opacity-0'
-                            }`}
-                        >
-                            Let's Connect
-                        </h1>
-                        <p
-                            className={`text-xl mb-8 transform transition-all duration-1000 delay-300 ease-out ${
-                                isLoaded
-                                    ? 'translate-y-0 opacity-100'
-                                    : 'translate-y-8 opacity-0'
-                            }`}
-                            style={{ color: '#9CA3AF' }}
-                        >
-                            Ready to bring your ideas to life? Let's start a
-                            conversation.
-                        </p>
-                    </div>
-
-                    <div className="max-w-2xl mx-auto">
-                        <GlassCard
-                            isHovered={hoveredCard === 'form'}
-                            onMouseEnter={() => setHoveredCard('form')}
-                            onMouseLeave={() => setHoveredCard(null)}
-                            delay={400}
-                            isLoaded={isLoaded}
-                        >
-                            <div className="relative z-10">
-                                <h2
-                                    className="text-2xl md:text-3xl font-bold mb-7 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300"
-                                >
-                                    Send Message
-                                </h2>
-
-                                <div className="space-y-5">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label
-                                                htmlFor="firstName"
-                                                className="block text-sm font-medium mb-2 text-gray-200"
-                                            >
-                                                First Name
-                                            </label>
-                                            <GlassInput
-                                                type="text"
-                                                id="firstName"
-                                                name="firstName"
-                                                value={formData.firstName}
-                                                onChange={handleChange}
-                                                placeholder="First Name"
-                                                required
-                                            />
-                                        </div>
-                                        <div>
-                                            <label
-                                                htmlFor="lastName"
-                                                className="block text-sm font-medium mb-2 text-gray-200"
-                                            >
-                                                Last Name
-                                            </label>
-                                            <GlassInput
-                                                type="text"
-                                                id="lastName"
-                                                name="lastName"
-                                                value={formData.lastName}
-                                                onChange={handleChange}
-                                                placeholder="Last Name"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="email"
-                                            className="block text-sm font-medium mb-2 text-gray-200"
-                                        >
-                                            Email
-                                        </label>
-                                        <GlassInput
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            placeholder="you@company.com"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            htmlFor="message"
-                                            className="block text-sm font-medium mb-2 text-gray-200"
-                                        >
-                                            Message
-                                        </label>
-                                        <GlassInput
-                                            id="message"
-                                            name="message"
-                                            value={formData.message}
-                                            onChange={handleChange}
-                                            placeholder="Tell us what we can help you with"
-                                            required
-                                            isTextarea
-                                            rows={4}
-                                        />
-                                    </div>
-
-                                    <div
-                                        className="flex items-start gap-3 p-3 px-5 rounded-2xl relative overflow-hidden"
-                                        style={{
-                                            background: 'rgba(255, 255, 255, 0.03)',
-                                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                                        }}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            id="agreePrivacy"
-                                            name="agreePrivacy"
-                                            checked={formData.agreePrivacy}
-                                            onChange={handleChange}
-                                            className="mt-1 h-5 w-5 rounded transition-all duration-200 accent-white"
-                                            required
-                                        />
-                                        <label
-                                            htmlFor="agreePrivacy"
-                                            className="text-sm leading-relaxed text-gray-200"
-                                        >
-                                            I agree to the{' '}
-                                            <a
-                                                href="#"
-                                                onClick={(e) => e.preventDefault()}
-                                                className="text-gray-400 hover:text-white hover:underline transition-colors duration-200"
-                                            >
-                                                Privacy Policy
-                                            </a>
-                                            .
-                                        </label>
-                                    </div>
-
-                                    <GlassButton onClick={handleSubmit}>
-                                        Send Message
-                                    </GlassButton>
-                                </div>
-                            </div>
-                        </GlassCard>
-                    </div>
-                </div>
-            </div>
-
-            <Footer />
-
-            <div
-                id="message-box"
-                style={{
-                    display: 'none',
-                    backgroundColor: 'rgba(123, 123, 123, 0.2)',
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    borderColor: 'rgba(248, 248, 248, 0.3)',
-                    color: '#FFFFFF',
-                }}
-                className="fixed bottom-6 right-6 backdrop-blur-xl py-4 px-6 rounded-2xl shadow-2xl z-50 transform transition-all duration-300"
-            >
-                <div className="flex items-center gap-3">
-                    <div
-                        className="w-2 h-2 rounded-full animate-pulse"
-                        style={{ backgroundColor: '#F8F8F8' }}
-                    ></div>
-                    <span className="font-medium">
-                        Thank you for your message!
-                    </span>
-                </div>
-            </div>
-
-            {!splineLoaded && (
-                <LoadingOverlay message="Preparing your contact experience" />
-            )}
+          {/* Title */}
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
+            <span className="text-white">ESTABLISH</span><br />
+            <span style={{ color: 'rgba(255,255,255,0.3)' }}>COMMUNICATION</span>
+          </h1>
+          <p className="font-mono text-sm text-white/40 max-w-md tracking-wide">
+            // TRANSMIT YOUR SIGNAL THROUGH THE VOID...<br />
+            // AWAITING INCOMING TRANSMISSION
+          </p>
         </div>
-    );
+
+        {/* Main Content */}
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+          {/* Left - Station Data */}
+          <div className={`transition-all duration-1000 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <HoloCard delay={200}>
+              {/* Card Header */}
+              <div className="flex items-center gap-2 mb-8">
+                <Satellite className="w-5 h-5 text-violet-400" />
+                <span className="font-mono text-xs tracking-widest text-white/50">STATION DATA</span>
+              </div>
+
+              {/* Contact Details */}
+              <div className="space-y-6">
+                {contactDetails.map((item, index) => (
+                  <a
+                    key={index}
+                    href={item.href}
+                    className={`group flex items-start gap-4 p-4 -m-4 rounded-lg transition-all duration-300 ${
+                      item.href ? 'hover:bg-white/[0.03] cursor-pointer' : ''
+                    }`}
+                  >
+                    <div 
+                      className="p-3 rounded-lg transition-all duration-300"
+                      style={{
+                        background: 'rgba(139,92,246,0.1)',
+                        border: '1px solid rgba(139,92,246,0.2)',
+                      }}
+                    >
+                      <item.icon size={18} className="text-violet-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-mono text-xs text-white/40 mb-1">{item.label}</p>
+                      <p className="text-white font-medium group-hover:text-violet-300 transition-colors">
+                        {item.value}
+                      </p>
+                    </div>
+                    {item.href && (
+                      <ArrowUpRight 
+                        size={16} 
+                        className="text-white/0 group-hover:text-violet-400 transition-all transform group-hover:translate-x-1 group-hover:-translate-y-1" 
+                      />
+                    )}
+                  </a>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="my-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.3), transparent)' }} />
+
+              {/* Social Links */}
+              <div>
+                <p className="font-mono text-xs text-white/40 tracking-widest mb-4">EXTERNAL LINKS</p>
+                <div className="flex gap-3">
+                  {socials.map((social, index) => (
+                    <a
+                      key={index}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 rounded-lg transition-all duration-300 group"
+                      style={{
+                        background: 'rgba(139,92,246,0.05)',
+                        border: '1px solid rgba(139,92,246,0.15)',
+                      }}
+                      aria-label={social.label}
+                    >
+                      <social.icon 
+                        size={18} 
+                        className="text-white/50 group-hover:text-violet-400 transition-colors" 
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </HoloCard>
+          </div>
+
+          {/* Right - Transmission Console */}
+          <div className={`transition-all duration-1000 delay-400 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <HoloCard delay={400}>
+              {/* Card Header */}
+              <div className="flex items-center gap-2 mb-8">
+                <Radio className="w-5 h-5 text-violet-400" />
+                <span className="font-mono text-xs tracking-widest text-white/50">TRANSMISSION CONSOLE</span>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name & Email Row */}
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block font-mono text-xs text-white/40 mb-2 tracking-wider">CALLSIGN</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField('name')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                      placeholder="Your identifier"
+                      className={`w-full px-4 py-4 rounded-lg text-white placeholder:text-white/20 focus:outline-none transition-all duration-300 ${focusedField === 'name' ? 'input-focus' : ''}`}
+                      style={{
+                        background: 'rgba(139,92,246,0.05)',
+                        border: `1px solid ${focusedField === 'name' ? energyColor : 'rgba(139,92,246,0.15)'}`,
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono text-xs text-white/40 mb-2 tracking-wider">RETURN FREQUENCY</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField('email')}
+                      onBlur={() => setFocusedField(null)}
+                      required
+                      placeholder="your@signal.com"
+                      className={`w-full px-4 py-4 rounded-lg text-white placeholder:text-white/20 focus:outline-none transition-all duration-300 ${focusedField === 'email' ? 'input-focus' : ''}`}
+                      style={{
+                        background: 'rgba(139,92,246,0.05)',
+                        border: `1px solid ${focusedField === 'email' ? energyColor : 'rgba(139,92,246,0.15)'}`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Subject */}
+                <div>
+                  <label className="block font-mono text-xs text-white/40 mb-2 tracking-wider">SIGNAL TYPE</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('subject')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    placeholder="Transmission category"
+                    className={`w-full px-4 py-4 rounded-lg text-white placeholder:text-white/20 focus:outline-none transition-all duration-300 ${focusedField === 'subject' ? 'input-focus' : ''}`}
+                    style={{
+                      background: 'rgba(139,92,246,0.05)',
+                      border: `1px solid ${focusedField === 'subject' ? energyColor : 'rgba(139,92,246,0.15)'}`,
+                    }}
+                  />
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label className="block font-mono text-xs text-white/40 mb-2 tracking-wider">TRANSMISSION DATA</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('message')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    rows={5}
+                    placeholder="Enter your message..."
+                    className={`w-full px-4 py-4 rounded-lg text-white placeholder:text-white/20 focus:outline-none transition-all duration-300 resize-none ${focusedField === 'message' ? 'input-focus' : ''}`}
+                    style={{
+                      background: 'rgba(139,92,246,0.05)',
+                      border: `1px solid ${focusedField === 'message' ? energyColor : 'rgba(139,92,246,0.15)'}`,
+                    }}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group w-full py-4 px-6 rounded-lg font-mono text-sm tracking-widest transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                  style={{
+                    background: isSubmitting ? 'rgba(139,92,246,0.2)' : 'linear-gradient(180deg, rgba(139,92,246,0.3) 0%, rgba(139,92,246,0.15) 100%)',
+                    border: '1px solid rgba(139,92,246,0.5)',
+                    boxShadow: '0 0 30px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+                      <span className="text-violet-300">TRANSMITTING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 text-violet-400 group-hover:text-white transition-colors" />
+                      <span className="text-white">TRANSMIT</span>
+                      <Send size={16} className="text-violet-400 group-hover:text-white transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Success Message */}
+              {submitted && (
+                <div 
+                  className="mt-6 p-4 rounded-lg flex items-center gap-3"
+                  style={{
+                    background: 'rgba(34,197,94,0.1)',
+                    border: '1px solid rgba(34,197,94,0.3)',
+                  }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" style={{ animation: 'pulse 1s ease-in-out infinite' }} />
+                  <span className="font-mono text-sm text-emerald-400">TRANSMISSION RECEIVED • RESPONSE INCOMING</span>
+                </div>
+              )}
+            </HoloCard>
+          </div>
+        </div>
+
+        {/* Bottom Quote */}
+        <div 
+          className={`mt-24 md:mt-32 text-center transition-all duration-1000 delay-600 ${
+            isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          <p className="font-mono text-xs text-white/20 tracking-wider">
+            // "ACROSS THE VOID, SIGNALS FIND THEIR WAY"
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ContactMain;

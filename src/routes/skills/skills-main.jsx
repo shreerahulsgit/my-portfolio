@@ -1,15 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import {
     SiExpress, SiNodedotjs, SiHtml5, SiCss3, SiBootstrap, SiTailwindcss, SiFigma, SiCplusplus, 
     SiPython, SiJavascript, SiMysql, SiMongodb, SiAmazon, SiGit, SiGithub, SiAndroid, SiApple, SiLinux,
 } from 'react-icons/si';
 import {
-    FaPenNib, FaRulerCombined, FaCode, FaPalette, FaGlobe, FaDatabase, FaTools, FaCertificate,
+    FaPenNib, FaRulerCombined, FaCode, FaPalette, FaGlobe, FaDatabase, FaTools,
 } from 'react-icons/fa';
-import LoadingOverlay from '../../lib/components/loading-overlay.jsx';
-import SplineMasking from '../../lib/components/spline-masking.jsx';
-import Spline from '@splinetool/react-spline';
 
 const skillCategories = [
     {
@@ -239,16 +235,10 @@ const SkillCard = ({ skill, delay }) => {
         return () => clearTimeout(timer);
     }, [delay]);
 
-    const handleClick = () => {
-        window.open(skill.url, '_blank', 'noopener,noreferrer');
-    };
-
     return (
         <div
-            className={`relative overflow-hidden rounded-2xl cursor-pointer transition-all duration-700 ease-out group ${
-                isVisible
-                    ? 'opacity-100 translate-y-0 scale-100'
-                    : 'opacity-0 translate-y-8 scale-95'
+            className={`relative overflow-hidden rounded-2xl cursor-pointer group ${
+                isVisible ? 'opacity-100' : 'opacity-0'
             }`}
             style={{
                 background: 'rgba(20, 20, 20, 0.6)',
@@ -258,13 +248,13 @@ const SkillCard = ({ skill, delay }) => {
                 boxShadow: isHovered
                     ? `0 20px 60px ${skill.color}40, 0 0 40px ${skill.color}30`
                     : '0 8px 32px rgba(0, 0, 0, 0.4)',
-                transform: isHovered
-                    ? 'translateY(-8px) scale(1.02)'
-                    : 'translateY(0) scale(1)',
+                transform: isVisible
+                    ? (isHovered ? 'translateY(-8px) scale(1.02)' : 'translateY(0) scale(1)')
+                    : 'translateY(20px) scale(0.95)',
+                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={handleClick}
         >
             {/* Animated gradient background */}
             <div
@@ -455,12 +445,12 @@ const CategorySection = ({ category, index }) => {
             >
                 <div className="p-6 flex items-center gap-4">
                     <div
-                        className={`text-3xl bg-gradient-to-r ${category.gradient} bg-clip-text text-transparent transition-transform duration-500 group-hover:scale-110`}
+                        className="text-3xl text-white/70 transition-transform duration-500 group-hover:scale-110"
                     >
                         <CategoryIcon />
                     </div>
                     <h2
-                        className={`text-3xl font-bold bg-gradient-to-r ${category.gradient} bg-clip-text text-transparent`}
+                        className="text-3xl font-bold text-white"
                     >
                         {category.category}
                     </h2>
@@ -491,120 +481,474 @@ const CategorySection = ({ category, index }) => {
     );
 };
 
+// Radial Skill Tree Component
+const RadialSkillTree = ({ categories }) => {
+    const [activeCategory, setActiveCategory] = useState(null);
+    const [activeSkill, setActiveSkill] = useState(null);
+    const [rotation, setRotation] = useState(0);
+
+    // Unified color scheme - Violet/White
+    const primaryColor = "#8B5CF6"; // Violet
+    const secondaryColor = "#FFFFFF"; // White
+
+    // Slow rotation animation
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (!activeCategory && !activeSkill) {
+                setRotation(prev => (prev + 0.08) % 360);
+            }
+        }, 50);
+        return () => clearInterval(interval);
+    }, [activeCategory, activeSkill]);
+
+    // Position categories around center - BIGGER radius
+    const getCategoryPosition = (index, total) => {
+        const baseAngle = (index / total) * 2 * Math.PI - Math.PI / 2;
+        const animatedAngle = baseAngle + (rotation * Math.PI / 180);
+        const radius = 280; // Increased from 200
+        return {
+            x: Math.cos(animatedAngle) * radius,
+            y: Math.sin(animatedAngle) * radius,
+            angle: animatedAngle,
+        };
+    };
+
+    // Position skills around their category - MORE SPREAD
+    const getSkillPosition = (skillIndex, totalSkills, categoryAngle) => {
+        const spreadAngle = Math.PI * 0.6; // Increased from PI/3 (60°) to 108°
+        const startAngle = categoryAngle - spreadAngle / 2;
+        const angleStep = totalSkills > 1 ? spreadAngle / (totalSkills - 1) : 0;
+        const skillAngle = startAngle + (skillIndex * angleStep);
+        const radius = 160; // Increased from 120
+        return {
+            x: Math.cos(skillAngle) * radius,
+            y: Math.sin(skillAngle) * radius,
+        };
+    };
+
+    return (
+        <div 
+            className="relative"
+            style={{ minHeight: "1000px" }} // Taller container
+        >
+            {/* Energy Pulse Animation Styles - White lines with Violet energy */}
+            <style>{`
+                @keyframes energyPulse {
+                    0%, 20% { 
+                        stroke-width: 2.5;
+                        stroke: rgba(255,255,255,0.75);
+                        filter: drop-shadow(0 0 4px rgba(255,255,255,0.5));
+                    }
+                    35% { 
+                        stroke-width: 6;
+                        stroke: #8B5CF6;
+                        filter: drop-shadow(0 0 18px #8B5CF6);
+                    }
+                    50%, 100% { 
+                        stroke-width: 2.5;
+                        stroke: rgba(255,255,255,0.75);
+                        filter: drop-shadow(0 0 4px rgba(255,255,255,0.5));
+                    }
+                }
+                @keyframes energyPulseSkill {
+                    0%, 35% { 
+                        stroke-width: 2;
+                        stroke: rgba(255,255,255,0.65);
+                        filter: drop-shadow(0 0 3px rgba(255,255,255,0.4));
+                    }
+                    50% { 
+                        stroke-width: 5;
+                        stroke: #8B5CF6;
+                        filter: drop-shadow(0 0 14px #8B5CF6);
+                    }
+                    65%, 100% { 
+                        stroke-width: 2;
+                        stroke: rgba(255,255,255,0.65);
+                        filter: drop-shadow(0 0 3px rgba(255,255,255,0.4));
+                    }
+                }
+                @keyframes pulseGlow {
+                    0%, 100% { 
+                        box-shadow: 0 0 80px rgba(139,92,246,0.2), inset 0 0 40px rgba(139,92,246,0.1);
+                        transform: translate(-50%, -50%) scale(1);
+                    }
+                    15% { 
+                        box-shadow: 0 0 200px rgba(139,92,246,0.8), inset 0 0 100px rgba(139,92,246,0.4);
+                        transform: translate(-50%, -50%) scale(1.05);
+                    }
+                    30%, 100% { 
+                        box-shadow: 0 0 80px rgba(139,92,246,0.2), inset 0 0 40px rgba(139,92,246,0.1);
+                        transform: translate(-50%, -50%) scale(1);
+                    }
+                }
+                @keyframes categoryPulse {
+                    0%, 25% {
+                        box-shadow: 0 0 25px rgba(255,255,255,0.2);
+                        border-color: rgba(255,255,255,0.5);
+                    }
+                    40% {
+                        box-shadow: 0 0 60px rgba(139,92,246,0.7), 0 0 30px rgba(139,92,246,0.5);
+                        border-color: #8B5CF6;
+                    }
+                    55%, 100% {
+                        box-shadow: 0 0 25px rgba(255,255,255,0.2);
+                        border-color: rgba(255,255,255,0.5);
+                    }
+                }
+                @keyframes skillNodePulse {
+                    0%, 40% {
+                        box-shadow: 0 0 15px rgba(255,255,255,0.15);
+                        border-color: rgba(255,255,255,0.45);
+                    }
+                    55% {
+                        box-shadow: 0 0 40px rgba(139,92,246,0.7), 0 0 20px rgba(139,92,246,0.5);
+                        border-color: #8B5CF6;
+                    }
+                    70%, 100% {
+                        box-shadow: 0 0 15px rgba(255,255,255,0.15);
+                        border-color: rgba(255,255,255,0.45);
+                    }
+                }
+                .energy-line {
+                    animation: energyPulse 2.5s ease-in-out infinite;
+                }
+                .energy-line-skill {
+                    animation: energyPulseSkill 2.5s ease-in-out infinite;
+                }
+                .category-node {
+                    animation: categoryPulse 2.5s ease-in-out infinite;
+                }
+                .skill-node {
+                    animation: skillNodePulse 2.5s ease-in-out infinite;
+                }
+            `}</style>
+
+            {/* Central Core - BIGGER with PULSE */}
+            <div 
+                className="absolute left-1/2 top-1/2 z-20"
+                style={{
+                    width: "160px",
+                    height: "160px",
+                    background: "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(139,92,246,0.1) 40%, transparent 70%)",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 0 120px rgba(139,92,246,0.4), inset 0 0 60px rgba(139,92,246,0.1)",
+                    border: "2px solid rgba(139,92,246,0.3)",
+                    transform: "translate(-50%, -50%)",
+                    animation: "pulseGlow 2.5s ease-in-out infinite",
+                }}
+            >
+                <span className="text-white/80 text-2xl font-bold tracking-widest">SKILLS</span>
+            </div>
+
+            {/* Orbital Rings - Multiple for visual depth */}
+            <div 
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                style={{
+                    width: "560px",
+                    height: "560px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                }}
+            />
+            <div 
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                style={{
+                    width: "320px",
+                    height: "320px",
+                    border: "1px dashed rgba(255,255,255,0.06)",
+                }}
+            />
+
+            {/* Categories and Skills */}
+            {categories.map((category, catIndex) => {
+                const catPos = getCategoryPosition(catIndex, categories.length);
+                const CategoryIcon = category.icon;
+                const isActiveCategory = activeCategory === catIndex;
+
+                return (
+                    <div key={category.category}>
+                        {/* Connection line from center to category - ENERGY FLOW */}
+                        <svg 
+                            className="absolute left-1/2 top-1/2 pointer-events-none"
+                            style={{
+                                width: "1px",
+                                height: "1px",
+                                overflow: "visible",
+                            }}
+                        >
+                            <line
+                                className="energy-line"
+                                x1="0"
+                                y1="0"
+                                x2={catPos.x}
+                                y2={catPos.y}
+                                stroke={isActiveCategory ? secondaryColor : `${primaryColor}90`}
+                                strokeWidth={isActiveCategory ? "3" : "2.5"}
+                                style={{ 
+                                    filter: `drop-shadow(0 0 ${isActiveCategory ? '8' : '4'}px ${primaryColor})`,
+                                }}
+                            />
+                        </svg>
+
+                        {/* Category Node */}
+                        <div
+                            className="absolute left-1/2 top-1/2 cursor-pointer z-10"
+                            style={{
+                                transform: `translate(calc(-50% + ${catPos.x}px), calc(-50% + ${catPos.y}px)) scale(${isActiveCategory ? 1.2 : 1})`,
+                                transition: activeCategory !== null || activeSkill !== null ? "transform 0.3s ease" : "none",
+                            }}
+                            onMouseEnter={() => setActiveCategory(catIndex)}
+                            onMouseLeave={() => setActiveCategory(null)}
+                        >
+                            <div
+                                className="relative flex items-center justify-center transition-all duration-300 category-node"
+                                style={{
+                                    width: isActiveCategory ? "100px" : "85px",
+                                    height: isActiveCategory ? "100px" : "85px",
+                                    background: isActiveCategory 
+                                        ? `radial-gradient(circle, ${primaryColor}50 0%, ${primaryColor}20 60%, transparent 100%)`
+                                        : "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.08) 60%, transparent 100%)",
+                                    borderRadius: "50%",
+                                    border: isActiveCategory ? `3px solid ${secondaryColor}` : "2px solid rgba(255,255,255,0.5)",
+                                    boxShadow: isActiveCategory 
+                                        ? `0 0 60px ${primaryColor}70, inset 0 0 25px ${primaryColor}30`
+                                        : "0 0 25px rgba(255,255,255,0.2)",
+                                }}
+                            >
+                                <CategoryIcon 
+                                    style={{ 
+                                        fontSize: isActiveCategory ? "2.2rem" : "1.8rem",
+                                        color: isActiveCategory ? secondaryColor : "rgba(255,255,255,0.8)",
+                                        transition: "all 0.3s ease",
+                                        filter: isActiveCategory ? `drop-shadow(0 0 10px ${primaryColor})` : "drop-shadow(0 0 3px rgba(255,255,255,0.3))",
+                                    }} 
+                                />
+                            </div>
+
+                            {/* Category Label */}
+                            <div 
+                                className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center transition-all duration-300"
+                                style={{
+                                    top: "100%",
+                                    marginTop: "8px",
+                                    opacity: isActiveCategory ? 1 : 0.6,
+                                }}
+                            >
+                                <span className="text-xs text-white/80 font-medium">{category.category}</span>
+                            </div>
+
+                            {/* Skills around this category */}
+                            {category.skills.map((skill, skillIndex) => {
+                                const skillPos = getSkillPosition(skillIndex, category.skills.length, catPos.angle);
+                                const SkillIcon = skill.icon;
+                                const isActiveSkillNode = activeSkill?.catIndex === catIndex && activeSkill?.skillIndex === skillIndex;
+                                
+                                return (
+                                    <div key={skill.name}>
+                                        {/* Connection line to skill - ENERGY FLOW */}
+                                        <svg 
+                                            className="absolute left-1/2 top-1/2 pointer-events-none"
+                                            style={{
+                                                width: "1px",
+                                                height: "1px",
+                                                overflow: "visible",
+                                                opacity: isActiveCategory ? 1 : 0.6,
+                                                transition: "opacity 0.3s ease",
+                                            }}
+                                        >
+                                            <line
+                                                className="energy-line-skill"
+                                                x1="0"
+                                                y1="0"
+                                                x2={skillPos.x}
+                                                y2={skillPos.y}
+                                                stroke={isActiveSkillNode ? secondaryColor : primaryColor}
+                                                strokeWidth={isActiveSkillNode ? "2" : "1.5"}
+                                                style={{
+                                                    filter: `drop-shadow(0 0 ${isActiveSkillNode ? '5' : '3'}px ${primaryColor})`,
+                                                }}
+                                            />
+                                        </svg>
+
+                                        {/* Skill Node */}
+                                        <div
+                                            className="absolute left-1/2 top-1/2 cursor-pointer"
+                                            style={{
+                                                transform: `translate(calc(-50% + ${skillPos.x}px), calc(-50% + ${skillPos.y}px)) scale(${isActiveSkillNode ? 1.25 : 1})`,
+                                                opacity: isActiveCategory ? 1 : 0.5,
+                                                transition: "all 0.3s ease",
+                                                zIndex: isActiveSkillNode ? 30 : 5,
+                                            }}
+                                            onMouseEnter={() => setActiveSkill({ catIndex, skillIndex })}
+                                            onMouseLeave={() => setActiveSkill(null)}
+                                        >
+                                            <div
+                                                className="flex items-center justify-center transition-all duration-300 skill-node"
+                                                style={{
+                                                    width: isActiveSkillNode ? "60px" : "50px",
+                                                    height: isActiveSkillNode ? "60px" : "50px",
+                                                    background: isActiveSkillNode 
+                                                        ? `radial-gradient(circle, ${primaryColor}60 0%, ${primaryColor}25 60%, transparent 100%)`
+                                                        : "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 70%, transparent 100%)",
+                                                    borderRadius: "50%",
+                                                    border: isActiveSkillNode 
+                                                        ? `2px solid ${secondaryColor}`
+                                                        : "1.5px solid rgba(255,255,255,0.45)",
+                                                    boxShadow: isActiveSkillNode 
+                                                        ? `0 0 35px ${primaryColor}80`
+                                                        : "0 0 15px rgba(255,255,255,0.15)",
+                                                }}
+                                            >
+                                                <SkillIcon 
+                                                    style={{ 
+                                                        fontSize: isActiveSkillNode ? "1.5rem" : "1.2rem",
+                                                        color: isActiveSkillNode ? secondaryColor : "rgba(255,255,255,0.75)",
+                                                        transition: "all 0.3s ease",
+                                                        filter: isActiveSkillNode ? `drop-shadow(0 0 6px ${primaryColor})` : "drop-shadow(0 0 2px rgba(255,255,255,0.2))",
+                                                    }} 
+                                                />
+                                            </div>
+
+                                            {/* Skill Detail Tooltip */}
+                                            {isActiveSkillNode && (
+                                                <div
+                                                    className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                                                    style={{
+                                                        top: "100%",
+                                                        marginTop: "10px",
+                                                        width: "200px",
+                                                        zIndex: 50,
+                                                    }}
+                                                >
+                                                    <div
+                                                        className="p-3 rounded-lg text-center"
+                                                        style={{
+                                                            background: "rgba(10, 10, 10, 0.95)",
+                                                            backdropFilter: "blur(20px)",
+                                                            border: `1px solid ${primaryColor}40`,
+                                                            boxShadow: `0 15px 40px rgba(0,0,0,0.5), 0 0 20px ${primaryColor}20`,
+                                                        }}
+                                                    >
+                                                        <h4 className="text-white font-semibold text-sm mb-1">{skill.name}</h4>
+                                                        <p className="text-gray-500 text-xs mb-2">{skill.description}</p>
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <span className="text-xs text-gray-600">Fluency</span>
+                                                            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                                <div 
+                                                                    className="h-full rounded-full"
+                                                                    style={{
+                                                                        width: `${skill.fluency}%`,
+                                                                        background: primaryColor,
+                                                                        boxShadow: `0 0 8px ${primaryColor}`,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <span className="text-xs font-medium text-white">{skill.fluency}%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 const SkillsMain = () => {
-    const navigate = useNavigate();
-    const [splineLoaded, setSplineLoaded] = useState(false);
-    const [splineError, setSplineError] = useState(false);
+    const [activeTab, setActiveTab] = useState('skills');
+
+    // Import CertificatesContent dynamically
+    const CertificatesContent = React.lazy(() => 
+        import('../certificates-page.jsx').then(module => ({ default: module.CertificatesContent }))
+    );
 
     return (
         <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             <div className="fixed inset-0 z-0 pointer-events-none">
-                {!splineError ? (
-                    <Spline
-                        scene="https://prod.spline.design/G37RxiKQ-OEWy4XU/scene.splinecode"
-                        onLoad={() => setSplineLoaded(true)}
-                        onError={() => setSplineError(true)}
-                    />
-                ) : (
-                    <div
-                        style={{
-                            background:
-                                'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-                            width: '100%',
-                            height: '100%',
-                        }}
-                    />
-                )}
+                <div
+                    style={{
+                        background: '#000000',
+                        width: '100%',
+                        height: '100%',
+                    }}
+                />
             </div>
 
             <div
                 className="fixed inset-0 z-1 pointer-events-none"
-                style={{ background: 'rgba(0, 0, 0, 0.3)' }}
+                style={{ background: 'rgba(0, 0, 0, 0.2)' }}
             />
 
             <div className="max-w-7xl mx-auto relative z-10">
-                <div className="text-center mb-16">
-                    <div
-                        className="inline-block mb-6 px-6 py-2 rounded-full text-sm font-medium"
-                        style={{
-                            background: 'rgba(40, 40, 40, 0.8)',
-                            backdropFilter: 'blur(20px)',
-                            WebkitBackdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            boxShadow: '0 4px 24px rgba(0, 0, 0, 0.5)',
-                            color: '#E5E7EB',
-                        }}
-                    >
-                        ✨ Explore My Expertise
-                    </div>
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-200 via-white to-gray-300">
-                        Technical Skills
+                {/* Header */}
+                <div className="text-center mb-12">
+                    <h1 className="text-5xl md:text-6xl font-bold mb-4 text-white">
+                        {activeTab === 'skills' ? 'Technical Skills' : 'Certificates'}
                     </h1>
-                    <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                        Hover over each skill to see proficiency levels and
-                        click to explore official documentation.
-                        <br />
-                        <span className="text-base text-gray-400 mt-2 inline-block">
-                            Organized by expertise domain for easy navigation
-                        </span>
+                    <p className="text-lg text-white/50 max-w-2xl mx-auto">
+                        {activeTab === 'skills' 
+                            ? 'Technologies and tools I work with, organized by domain.'
+                            : 'Courses completed and skills validated through structured learning.'
+                        }
                     </p>
                 </div>
 
-                {skillCategories.map((category, index) => (
-                    <CategorySection
-                        key={index}
-                        category={category}
-                        index={index}
-                    />
-                ))}
-
-                {/* Certificate Button */}
-                <div className="text-center mt-16 mb-24">
-                    <button
-                        onClick={() => navigate('/skills/certificates')}
-                        className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
+                {/* Tab Navigation */}
+                <div className="flex justify-center mb-16">
+                    <div 
+                        className="inline-flex p-1 rounded-xl"
                         style={{
-                            background:
-                                'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15))',
-                            backdropFilter: 'blur(20px)',
-                            WebkitBackdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
-                            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.2)',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
                         }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div
-                                className="transition-all duration-300 group-hover:scale-110 group-hover:rotate-12"
-                                style={{
-                                    color: '#3B82F6',
-                                    filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))',
-                                }}
-                            >
-                                <FaCertificate className="text-xl" />
-                            </div>
-                            <span className="text-white font-semibold text-lg group-hover:text-blue-200 transition-colors duration-300">
-                                View Certificates
-                            </span>
-                        </div>
-
-                        {/* Glow effect on hover */}
-                        <div
-                            className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none"
-                            style={{
-                                background:
-                                    'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1))',
-                                filter: 'blur(8px)',
-                            }}
-                        />
-                    </button>
+                        <button
+                            onClick={() => setActiveTab('skills')}
+                            className={`px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                                activeTab === 'skills'
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-white/50 hover:text-white/80'
+                            }`}
+                        >
+                            Skills
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('certificates')}
+                            className={`px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                                activeTab === 'certificates'
+                                    ? 'bg-white/10 text-white'
+                                    : 'text-white/50 hover:text-white/80'
+                            }`}
+                        >
+                            Certificates
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            {!splineLoaded && (
-                <LoadingOverlay message="Preparing your skills experience" />
-            )}
+                {/* Content */}
+                {activeTab === 'skills' ? (
+                    <RadialSkillTree categories={skillCategories} />
+                ) : (
+                    <React.Suspense fallback={
+                        <div className="flex justify-center py-20">
+                            <div className="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin" />
+                        </div>
+                    }>
+                        <CertificatesContent />
+                    </React.Suspense>
+                )}
+            </div>
         </div>
     );
 };
 
 export default SkillsMain;
+
