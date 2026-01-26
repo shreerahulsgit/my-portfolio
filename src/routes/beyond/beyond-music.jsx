@@ -133,7 +133,8 @@ const AudioVisualizer = ({ isPlaying }) => {
       
       if (timestamp - lastUpdate >= throttleMs) {
         const elapsedSeconds = (timestamp - startTime) / 1000;
-        const currentWave = elapsedSeconds % (Math.PI * 2);
+        // Use a speed multiplier to control animation speed (0.5 radians per second)
+        const currentWave = (elapsedSeconds * 0.5) % (Math.PI * 2);
         
         setParticles(Array.from({ length: 24 }, (_, i) => {
           const angle = (i / 24) * Math.PI * 2;

@@ -20,10 +20,16 @@ const Fragment = ({ fragment, index, onHover, onLeave, onClick, isActive, mouseP
   // Parallax drift effect
   useEffect(() => {
     let rafId;
-    const animate = () => {
+    let startTime = null;
+    
+    const animate = (timestamp) => {
+      if (startTime === null) {
+        startTime = timestamp;
+      }
+      
       setDrift((prev) => ({
-        x: Math.sin(Date.now() / (3000 + index * 500)) * 15,
-        y: Math.cos(Date.now() / (4000 + index * 700)) * 10,
+        x: Math.sin(timestamp / (3000 + index * 500)) * 15,
+        y: Math.cos(timestamp / (4000 + index * 700)) * 10,
       }));
       rafId = requestAnimationFrame(animate);
     };
