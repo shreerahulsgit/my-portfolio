@@ -114,7 +114,6 @@ const LyricClouds = () => {
 // ============================================
 const AudioVisualizer = ({ isPlaying }) => {
   const [particles, setParticles] = useState([]);
-  const [wave, setWave] = useState(0);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -129,7 +128,6 @@ const AudioVisualizer = ({ isPlaying }) => {
     
     const animate = (timestamp) => {
       if (timestamp - lastUpdate >= throttleMs) {
-        setWave(prev => (prev + 0.1) % (Math.PI * 2));
         setParticles(Array.from({ length: 24 }, (_, i) => {
           const currentWave = (timestamp / 1000) % (Math.PI * 2);
           const angle = (i / 24) * Math.PI * 2;
